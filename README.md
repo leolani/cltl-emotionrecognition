@@ -1,3 +1,5 @@
-# cltl-emotionrecognition
-An emotion recognition service.
-This service can expect several multi-modal variable-length data, and outputs a discrete class (e.g. sad, happy, excited, etc.)
+# cltl-emotion-detection
+Detects emotions of expressed in text  signals and stores these as annotations in EMISSOR format and pushes these as perspectives to the episodic Knowledge Graph.
+
+
+
