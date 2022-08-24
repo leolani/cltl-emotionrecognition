@@ -8,13 +8,13 @@ from transformers import pipeline
 
 from emissor.representation.annotation import AnnotationType
 from emissor.representation.scenario import Mention, Annotation
-from cltl.emotion_extraction.emotion_extractor import Analyzer
+from cltl.emotion_extraction.api import EmotionExtractor
 import cltl.emotion_extraction.emotion_mappings as mappings
 ObjectInfo = namedtuple('ObjectInfo', ('type', 'bbox'))
 model_name = "bhadresh-savani/bert-base-go-emotion"
 
 
-class GoEmotionDetector(Analyzer):
+class GoEmotionDetector(EmotionExtractor):
     def __init__(self):
         self.emotion_pipeline = pipeline('sentiment-analysis',  model=model_name, return_all_scores=True)
 

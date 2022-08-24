@@ -1,65 +1,56 @@
 import logging
-from dataclasses import asdict
 from typing import List
 
-from cltl.combot.event.emissor import AnnotationEvent, ScenarioEvent, ScenarioStarted, ScenarioStopped
 from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
+from cltl.combot.infra.time_util import timestamp_now
 from cltl.combot.infra.topic_worker import TopicWorker
-from cltl_service.object_recognition.schema import ObjectRecognitionEvent
-from cltl_service.vector_id.schema import VectorIdentityEvent
 
-from cltl.emotion_extraction.api import EmotionExtractor
+from cltl.emotion_extraction.emotion_extractor import Analyzer
 
 logger = logging.getLogger(__name__)
 
-
 class EmotionExtractionService:
-    """
-    Service used to integrate the component into applications.
-    """
     @classmethod
-    def from_config(cls, emotion_extractor: EmotionExtractor,
-                    event_bus: EventBus,
-                    resource_manager: ResourceManager,
+    def from_config(cls, extractor: Analyzer, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
-        config = config_manager.get_config("cltl.emotion_extraction.events")
+        config = config_manager.get_config("cltl.emotion_extraction")
 
-        input_topics = config.get("topics_in", multi=True)
-        output_topic = config.get("topic_out")
+        return cls(config.get("topic_input"), config.get("topic_output"), config.get("topic_scenario"),
+                   config.get("topic_intention"), config.get("intentions", multi=True),
+                   extractor, event_bus, resource_manager)
 
-        scenario_topic = config.get("topic_scenario")
-        intentions = config.get("intentions", multi=True)
-        intention_topic = config.get("topic_intention")
+    def __init__(self, input_topic: str, output_topic: str, scenario_topic: str,
+                 intention_topic: str, intentions: List[str], extractor: Analyzer,
+                 event_bus: EventBus, resource_manager: ResourceManager):
+        self._extractor = extractor
 
-        return cls(emotion_extractor, scenario_topic, input_topics, output_topic, intentions, intention_topic,
-                   event_bus, resource_manager)
-
-    def __init__(self, emotion_extractor: EmotionExtractor,
-                 scenario_topic: str, input_topics: List[str], output_topic: str, intentions: List[str], intention_topic: str,
-                 event_bus: EventBus, resource_manager: ResourceManager, object_rate: int = 5):
         self._event_bus = event_bus
         self._resource_manager = resource_manager
 
-        self._emotion_extractor = emotion_extractor
-
-        self._input_topics = input_topics + [scenario_topic, intention_topic]
+        self._input_topic = input_topic
         self._output_topic = output_topic
+        self._scenario_topic = scenario_topic
 
         self._intention_topic = intention_topic if intention_topic else None
         self._intentions = set(intentions) if intentions else {}
         self._active_intentions = {}
 
         self._topic_worker = None
-        self._app = None
 
-        self._scenario_id = None
+        self._speaker = None
 
-    def start(self):
-        self._topic_worker = TopicWorker(self._input_topics, self._event_bus, provides=[self._output_topic],
+    @property
+    def app(self):
+        return None
+
+    def start(self, timeout=30):
+        self._topic_worker = TopicWorker([self._input_topic, self._scenario_topic, self._intention_topic],
+                                         self._event_bus, provides=[self._output_topic],
+                                         resource_manager=self._resource_manager, processor=self._process,
                                          buffer_size=64,
-                                         resource_manager=self._resource_manager, processor=self._process)
+                                         name=self.__class__.__name__)
         self._topic_worker.start().wait()
 
     def stop(self):
@@ -76,36 +67,66 @@ class EmotionExtractionService:
             logger.info("Set active intentions to %s", self._active_intentions)
             return
 
-        if event.payload.type == ScenarioStarted.__name__:
-            self._scenario_id = event.payload.scenario.id
-            return
-        if event.payload.type == ScenarioStopped.__name__:
-            self._scenario_id = None
-            return
-        if event.payload.type == ScenarioEvent.__name__:
-            return
-
-        if not self._scenario_id:
-            logger.debug("No active scenario, skipping %s", event.payload.type)
-            return
-
         if self._intentions and not (self._active_intentions & self._intentions):
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
+        utterance= event.payload.signal.text
+        emotions = self._extractor.analyze(utterance)
+        response = self._emotions_to_capsules(emotions, event.payload.signal)
 
-        emotion_factory = None
-        if event.payload.type == AnnotationEvent.__name__:
-            emotion_factory = self._emotion_extractor.extract_text_emotions
-        elif event.payload.type == VectorIdentityEvent.__name__:
-            emotion_factory = self._emotion_extractor.extract_face_emotions
-        elif event.payload.type == ObjectRecognitionEvent.__name__:
-            mention_factory = self._mention_extractor.extract_object_emotions
+        if response:
+            # TODO: transform capsules into proper EMISSOR annotations
+            self._event_bus.publish(self._output_topic, Event.for_payload(response))
+            logger.debug("Published %s emotions for signal %s (%s): %s",
+                         len(response), event.payload.signal.id, event.payload.signal.text, response)
         else:
-            raise ValueError("Unsupported event type %s", event.payload.type)
+            logger.debug("No emotions for signal %s (%s)", event.payload.signal.id, event.payload.signal.text)
 
-        emotions = emotion_factory(event.payload.emotions, self._scenario_id) if mention_factory else None
+    def _emotions_to_capsules(self, emotions, signal):
+        capsules = []
 
-        if emotions:
-            logger.debug("Detected emotions", emotions)
-            self._event_bus.publish(self._output_topic, Event.for_payload([asdict(emotion) for emotion in emotions]))
+        for emotion in emotions:
+            scenario_id = signal.time.container_id
+
+            capsule = {"chat": scenario_id,
+                       "turn": signal.id,
+                       "author": self._get_author(),
+                       ###
+                       "perspective": self._extract_perspective(emotion),
+                       ###
+                       "context_id": None,
+                       "timestamp": timestamp_now()
+                       }
+
+            capsules.append(capsule)
+
+        return capsules
+
+    def _extract_perspective(emotion):
+        """
+        This function extracts perspective from emotions
+        :return: perspective dictionary consisting of emotion, sentiment, certainty, and polarity value
+        """
+        certainty = 1  # Possible
+        polarity = 1  # Positive
+        sentiment = ""  # Underspecified
+        emotion = ""  # Underspecified
+
+        if emotion["sentiment"]:
+            sentiment=emotion["sentiment"]
+        if emotion["emotion"]:
+            emotion=emotion["emotion"]
+
+        perspective = {'sentiment': sentiment,
+                       'certainty': float(certainty),
+                       'polarity': float(polarity),
+                       'emotion': emotion}
+        return perspective
+
+    def _get_author(self):
+        return {
+            "label": self._speaker.name if self._speaker and self._speaker.name else self._chat.speaker,
+            "type": ["person"],
+            "uri": self._speaker.uri if self._speaker else None
+        }

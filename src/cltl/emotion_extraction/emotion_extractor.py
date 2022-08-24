@@ -47,7 +47,7 @@ class Analyzer(object):
         """
         Returns
         -------
-        triple: dict or None
+        emotion: dict or None
         """
         return self._emotions
 

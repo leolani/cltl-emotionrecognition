@@ -53,3 +53,9 @@ class EmotionExtractor(abc.ABC):
     def extract_face_emotions(self, imageSignal: ImageSignal, source: str, scenario_id:str):
         raise NotImplementedError()
 
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
