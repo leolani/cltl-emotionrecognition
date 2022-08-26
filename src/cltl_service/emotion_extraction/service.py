@@ -7,13 +7,13 @@ from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.time_util import timestamp_now
 from cltl.combot.infra.topic_worker import TopicWorker
 
-from cltl.emotion_extraction.emotion_extractor import Analyzer
+from cltl.emotion_extraction.emotion_extractor import EmotionExtractorImpl
 
 logger = logging.getLogger(__name__)
 
 class EmotionExtractionService:
     @classmethod
-    def from_config(cls, extractor: Analyzer, event_bus: EventBus, resource_manager: ResourceManager,
+    def from_config(cls, extractor: EmotionExtractorImpl, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
         config = config_manager.get_config("cltl.emotion_extraction")
 
@@ -22,7 +22,7 @@ class EmotionExtractionService:
                    extractor, event_bus, resource_manager)
 
     def __init__(self, input_topic: str, output_topic: str, scenario_topic: str,
-                 intention_topic: str, intentions: List[str], extractor: Analyzer,
+                 intention_topic: str, intentions: List[str], extractor: EmotionExtractorImpl,
                  event_bus: EventBus, resource_manager: ResourceManager):
         self._extractor = extractor
 
@@ -73,8 +73,8 @@ class EmotionExtractionService:
             return
         utterance= event.payload.signal.text
         emotions = self._extractor.analyze(utterance)
-        response = self._emotions_to_capsules(emotions, event.payload.signal)
-
+       # capsule = self._emotions_to_capsules(emotions, event.payload.signal)
+        response = self._extractor.respond(self._speaker)
         if response:
             # TODO: transform capsules into proper EMISSOR annotations
             self._event_bus.publish(self._output_topic, Event.for_payload(response))

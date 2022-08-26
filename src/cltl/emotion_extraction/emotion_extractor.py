@@ -1,9 +1,21 @@
 from cltl.emotion_extraction.api import EmotionExtractor
 from cltl.emotion_extraction import logger
+import emotion_sentences as responses
+import random
 
 
 class EmotionExtractorImpl(EmotionExtractor):
 
+
+    ADDRESS = [
+        "Well",
+        "You see",
+        "See",
+        "Look",
+        "I'll tell you",
+        "Guess what",
+        "Ok",
+    ]
     def __init__(self):
         """
         Abstract Analyzer Object: call Analyzer.analyze(utterance) factory function
@@ -46,6 +58,18 @@ class EmotionExtractorImpl(EmotionExtractor):
         #         cls = getattr(discrete, el.title())
         #         closest = continuous_to_enum(cls, triple["perspective"][el])
         #         self._log.info("Perspective {:>10}: {}".format(el, closest.name))
+
+
+    def respond(self, speaker_name: str = None) -> str:
+        results = []
+        results.extend(responses.respond_to_go(self.go_emotions))
+        results.extend(responses.respond_to_ekman(self.ekman_emotions))
+        results.extend(responses.respond_to_sentiment(self.sentiments))
+        if results:
+            say = "{}{}".format(random.choice(self.ADDRESS), f" {speaker_name}," if speaker_name else "")
+            for result in results:
+                say +=  ","+result
+            return say
 
     @property
     def signal(self):

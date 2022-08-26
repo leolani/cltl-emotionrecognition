@@ -6,6 +6,7 @@ from emissor.representation.scenario import TextSignal, ImageSignal, AudioSignal
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class Source:
     label: str
