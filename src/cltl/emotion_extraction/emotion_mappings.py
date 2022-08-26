@@ -81,19 +81,19 @@ ekman_sentiment_map={
 
 ### Mapping GO_Emotions to sentiment values
 go_sentiment_map={
-    "positive": ["amusement", "excitement", "joy", "love", "desire", "optimism", "caring", "pride", "admiration", "gratitude", "relief", "approval"],
-    "negative": ["fear", "nervousness", "remorse", "embarrassment", "disappointment", "sadness", "grief", "disgust", "anger", "annoyance", "disapproval"],
-    "ambiguous": ["realization", "surprise", "curiosity", "confusion"]
+    "positive": ["curiosity", "amusement", "excitement", "joy", "love", "desire", "optimism", "caring", "pride", "admiration", "gratitude", "relief", "approval"],
+    "negative": ["fear",  "confusion", "nervousness", "remorse", "embarrassment", "disappointment", "sadness", "grief", "disgust", "anger", "annoyance", "disapproval"],
+    "neutral": ["realization", "surprise", "neutral"]
 }
 
 ### Mapping GO_Emotions to Ekman values
 go_ekman_map={
     "anger": ["anger", "annoyance", "disapproval"],
     "disgust": ["disgust"],
-    "fear": ["fear", "nervousness"],
-    "joy": ["joy", "amusement", "approval", "excitement", "gratitude",  "love", "optimism", "relief", "pride", "admiration", "desire", "caring"],
+    "fear": ["fear", "nervousness", "confusion"],
+    "joy": ["joy", "curiosity", "amusement", "approval", "excitement", "gratitude",  "love", "optimism", "relief", "pride", "admiration", "desire", "caring"],
     "sadness": ["sadness", "disappointment", "embarrassment", "grief",  "remorse"],
-    "surprise": ["surprise", "realization", "confusion", "curiosity"],
+    "surprise": ["surprise", "realization"],
     "neutral": ["neutral"]
 }
 

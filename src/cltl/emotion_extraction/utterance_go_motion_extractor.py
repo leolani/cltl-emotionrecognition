@@ -1,39 +1,21 @@
 import logging
 import time
-from collections import namedtuple
-from concurrent.futures import ThreadPoolExecutor
 import uuid
-import jsonpickle
 from transformers import pipeline
-
+from cltl.emotion_extraction.emotion_extractor import EmotionExtractorImpl
 from emissor.representation.annotation import AnnotationType
 from emissor.representation.scenario import Mention, Annotation
-from cltl.emotion_extraction.api import EmotionExtractor
 import cltl.emotion_extraction.emotion_mappings as mappings
-ObjectInfo = namedtuple('ObjectInfo', ('type', 'bbox'))
 model_name = "bhadresh-savani/bert-base-go-emotion"
 
+_THRESHOLD = 0.5
 
-class GoEmotionDetector(EmotionExtractor):
+class GoEmotionDetector (EmotionExtractorImpl):
     def __init__(self):
+        super().__init__()
         self.emotion_pipeline = pipeline('sentiment-analysis',  model=model_name, return_all_scores=True)
 
-    def __enter__(self):
-        executor = ThreadPoolExecutor(max_workers=2)
-        detect = executor.submit(self.detect_infra.__enter__)
-        detect.result()
-        executor.shutdown()
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        executor = ThreadPoolExecutor(max_workers=2)
-        detect = executor.submit(lambda: self.detect_infra.__exit__(exc_type, exc_val, exc_tb))
-        detect.result()
-        executor.shutdown()
-
-
-    def _detect_emotion_from_utterance(self, utterance: str) -> tuple:
+    def _analyse_utterance(self, utterance: str):
         """Recognize the speaker emotion of a given utterance.
         Args
         ----
@@ -46,27 +28,36 @@ class GoEmotionDetector(EmotionExtractor):
         logging.debug(f"sending utterance to server...")
         start = time.time()
 
-        go_emotions =[]
-        ekman_emotions = []
-        sentiments =[]
+
 
         response = self.emotion_pipeline(utterance)
         emotion_labels = mappings.sort_predictions(response[0])
-        print(emotion_labels)
-        ### We take the highest scoring emotion
-        go_emotions.append({emotion_labels[0]['label'], emotion_labels[0]['score']})
+        ### We take the highest scoring emotion: emotion_labels[0]
+
+        self._go_emotions.append({emotion_labels[0]['label'], emotion_labels[0]['score']})
+        for emotion in emotion_labels[1:]:
+            if emotion['score']/emotion_labels[0]['score']>_THRESHOLD:
+                self._go_emotions.append({emotion['label'], emotion['score']})
 
         ekman_labels = mappings.get_averaged_mapped_scores(mappings.go_ekman_map, emotion_labels)
-        ekman_emotions.append({ekman_labels[0]['label'], ekman_labels[0]['score']})
+        self._ekman_emotions.append({ekman_labels[0]['label'], ekman_labels[0]['score']})
+
+        for emotion in ekman_labels[1:]:
+            if emotion['score']/ekman_labels[0]['score']> _THRESHOLD:
+                self._ekman_emotions.append({emotion['label'], emotion['score']})
 
         sentiment_labels = mappings.get_averaged_mapped_scores(mappings.go_sentiment_map, emotion_labels)
-        sentiments.append({sentiment_labels[0]['label'], sentiment_labels[0]['score']})
+        self._sentiments.append({sentiment_labels[0]['label'], sentiment_labels[0]['score']})
+
+        for emotion in sentiment_labels[1:]:
+            if emotion['score'] / sentiment_labels[0]['score'] > _THRESHOLD:
+                self._sentiments.append({emotion['label'], emotion['score']})
 
         logging.info("got %s from server in %s sec", response, time.time()-start)
-        logging.info(f"{go_emotions} Go emotion detected!")
-        logging.info(f"{ekman_emotions} Ekman emotion detected!")
-        logging.info(f"{sentiments} Sentiments detected!")
-        return go_emotions,ekman_emotions, sentiments
+        logging.info(f"{emotion_labels} All Go emotion detected!")
+        logging.info(f"{self._go_emotions} Highest scoring Go emotion!")
+        logging.info(f"{self._ekman_emotions} Highest scoring Ekman emotion!")
+        logging.info(f"{self._sentiments} Highest scoring Sentiment!")
 
     def _create_emotion_mention(self, source: str, current_time: int, emotion: str) -> Mention:
         text_annotation = Annotation(AnnotationType.EMOTION.name, emotion, source, current_time)
@@ -80,8 +71,8 @@ if __name__ == "__main__":
     '''
     utterance = "I love cats."
     analyzer = GoEmotionDetector()
-    go, ekman, sentiment = analyzer._detect_emotion_from_utterance(utterance)
+    analyzer._analyse_utterance(utterance)
 
-    print(go)
-    print(ekman)
-    print(sentiment)
+    print("Go", analyzer.go_emotions)
+    print("Ekman", analyzer.ekman_emotions)
+    print("Sentiment", analyzer.sentiments)

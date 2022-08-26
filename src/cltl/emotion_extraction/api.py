@@ -30,6 +30,8 @@ class ImageEmotion(Emotion):
 @dataclass
 class AudioEmotion(Emotion):
     audio: str
+    chat: str
+    turn: str
     detection: str
     position: str
     sound: str
@@ -43,6 +45,8 @@ class TextEmotion(Emotion):
     position: str
 
 
+
+
 class EmotionExtractor(abc.ABC):
     def extract_text_emotions(self, textSignal:TextSignal, source: str, scenario_id:str):
         raise NotImplementedError()
@@ -53,7 +57,7 @@ class EmotionExtractor(abc.ABC):
     def extract_face_emotions(self, imageSignal: ImageSignal, source: str, scenario_id:str):
         raise NotImplementedError()
 
-
+    #@TODO Are the next defs nwcessary? Copied from aboutagent
     def __enter__(self):
         pass
 
