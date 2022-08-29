@@ -31,6 +31,6 @@ class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
         annotation = Annotation(emotion.type, emotion.value, __name__, timestamp_now())
 
         ### Uses the general Emotion type
-        annotation = Annotation(Emotion.__name__, emotion.value, __name__, timestamp_now())
+        #annotation = Annotation(Emotion.__name__, emotion.value, __name__, timestamp_now())
         return Mention(str(uuid.uuid4()), [segment], [annotation])
 

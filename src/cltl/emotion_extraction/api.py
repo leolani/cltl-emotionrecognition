@@ -41,12 +41,13 @@ class EmotionExtractor(abc.ABC):
         self._ekman_emotions = [Emotion]
         self._sentiments = [Emotion]
 
-    def _extract_text_emotions(self, textSignal:TextSignal, source: str):
+    def _extract_text_emotions(self, utterance:str, source: str):
         raise NotImplementedError()
 
+    # @TODO
     def _extract_audio_emotions(self, audioSignal: AudioSignal, source: str):
         raise NotImplementedError()
-
+    # @TODO
     def _extract_face_emotions(self, imageSignal: ImageSignal, source: str):
         raise NotImplementedError()
 
