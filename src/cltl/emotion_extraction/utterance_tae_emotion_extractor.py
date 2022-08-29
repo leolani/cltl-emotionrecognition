@@ -2,11 +2,9 @@ import logging
 import uuid
 import time
 from concurrent.futures import ThreadPoolExecutor
-from emissor.representation.annotation import AnnotationType
-from emissor.representation.scenario import Mention, Annotation
 import jsonpickle
 import requests
-from cltl.emotion_extraction.emotion_extractor import EmotionExtractorImpl
+from cltl.emotion_extraction.emotion_responder import EmotionExtractor
 import cltl.emotion_extraction.emotion_mappings as mappings
 from cltl.combot.infra.docker import DockerInfra
 
@@ -15,7 +13,7 @@ from cltl.combot.infra.docker import DockerInfra
 _URL = "http://127.0.0.1:10006/"
 _THRESHOLD = 0.5
 
-class EmobertaEmotionDetectorProxy(EmotionExtractorImpl):
+class EmobertaEmotionDetectorProxy(EmotionExtractor):
     def __init__(self):
         super().__init__()
         self.detect_infra = DockerInfra('tae898/erc', 10006, 10006, False, 15)
@@ -34,7 +32,7 @@ class EmobertaEmotionDetectorProxy(EmotionExtractorImpl):
         detect.result()
         executor.shutdown()
 
-    def _analyse_utterance(self, utterance: str):
+    def _extract_text_emotions(self, utterance: str, source:str):
         """Recognize the speaker emotion of a given utterance.
         Args
         ----
@@ -46,6 +44,8 @@ class EmobertaEmotionDetectorProxy(EmotionExtractorImpl):
         """
         start = time.time()
         logging.debug(f"sending utterance to server...")
+        self._source = source
+
         data = {"text": utterance}
         data = jsonpickle.encode(data)
         response = requests.post(_URL, json=data)
@@ -85,21 +85,15 @@ class EmobertaEmotionDetectorProxy(EmotionExtractorImpl):
         logging.info(f"{self._sentiments} Highest scoring Sentiment!")
 
 
-    def _create_emotion_mention(self, source: str, speaker, current_time: int, emotion: str) -> Mention:
-        text_annotation = Annotation(AnnotationType.EMOTION.name, emotion, source, current_time)
-        mention = Mention(str(uuid.uuid4()), [], [text_annotation])
-        return mention
-
 
 if __name__ == "__main__":
     '''
-   
     '''
+
     utterance = "I love cats."
     analyzer = EmobertaEmotionDetectorProxy()
-    analyzer._analyse_utterance(utterance)
+    analyzer._extract_text_emotions(utterance, "Piek")
 
-
-    print("Go", analyzer.go_emotions)
-    print("Ekman", analyzer.ekman_emotions)
-    print("Sentiment", analyzer.sentiments)
+    print("Go", analyzer._go_emotions)
+    print("Ekman", analyzer._ekman_emotions)
+    print("Sentiment", analyzer._sentiments)

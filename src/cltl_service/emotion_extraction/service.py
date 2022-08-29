@@ -1,21 +1,22 @@
 import logging
 from typing import List
-
+from dataclasses import asdict
 from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
-from cltl.combot.infra.time_util import timestamp_now
 from cltl.combot.infra.topic_worker import TopicWorker
-
-from cltl.emotion_extraction.emotion_extractor import EmotionExtractorImpl
+from cltl.combot.event.emissor import TextSignalEvent
+from cltl.emotion_extraction.api import EmotionExtractor
+from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
+from cltl.combot.event.emissor import AnnotationEvent #, ScenarioEvent, ScenarioStarted, ScenarioStopped
 
 logger = logging.getLogger(__name__)
 
 class EmotionExtractionService:
     @classmethod
-    def from_config(cls, extractor: EmotionExtractorImpl, event_bus: EventBus, resource_manager: ResourceManager,
+    def from_config(cls, extractor: EmotionExtractor, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
-        config = config_manager.get_config("cltl.emotion_extraction")
+        config = config_manager.get_config("cltl.text_emotion_extraction")
 
         return cls(config.get("topic_input"), config.get("topic_output"), config.get("topic_scenario"),
                    config.get("topic_intention"), config.get("intentions", multi=True),
@@ -61,7 +62,7 @@ class EmotionExtractionService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process(self, event: Event):
+    def _process_and_annotate_text_signal(self, event: TextSignalEvent):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
@@ -72,61 +73,17 @@ class EmotionExtractionService:
                          self._intentions, self._active_intentions, event)
             return
         utterance= event.payload.signal.text
-        emotions = self._extractor.analyze(utterance, self._speaker, None)
-       # capsule = self._emotions_to_capsules(emotions, event.payload.signal)
-        response = self._extractor.respond(self._speaker)
-        if response:
-            # TODO: transform capsules into proper EMISSOR annotations
-            self._event_bus.publish(self._output_topic, Event.for_payload(response))
-            logger.debug("Published %s emotions for signal %s (%s): %s",
-                         len(response), event.payload.signal.id, event.payload.signal.text, response)
-        else:
-            logger.debug("No emotions for signal %s (%s)", event.payload.signal.id, event.payload.signal.text)
+        self._extractor.__extract_text_emotions(utterance, self._speaker)
 
-    def _emotions_to_capsules(self, emotions, signal):
-        capsules = []
-
-        for emotion in emotions:
-            scenario_id = signal.time.container_id
-
-            capsule = {"chat": scenario_id,
-                       "turn": signal.id,
-                       "author": self._get_author(),
-                       ###
-                       "perspective": self._extract_perspective(emotion),
-                       ###
-                       "context_id": None,
-                       "timestamp": timestamp_now()
-                       }
-
-            capsules.append(capsule)
-
-        return capsules
-
-    def _extract_perspective(emotion):
-        """
-        This function extracts perspective from emotions
-        :return: perspective dictionary consisting of emotion, sentiment, certainty, and polarity value
-        """
-        certainty = 1  # Possible
-        polarity = 1  # Positive
-        sentiment = ""  # Underspecified
-        emotion = ""  # Underspecified
-
-        if emotion["sentiment"]:
-            sentiment=emotion["sentiment"]
-        if emotion["emotion"]:
-            emotion=emotion["emotion"]
-
-        perspective = {'sentiment': sentiment,
-                       'certainty': float(certainty),
-                       'polarity': float(polarity),
-                       'emotion': emotion}
-        return perspective
-
-    def _get_author(self):
-        return {
-            "label": self._speaker.name if self._speaker and self._speaker.name else self._chat.speaker,
-            "type": ["person"],
-            "uri": self._speaker.uri if self._speaker else None
-        }
+        for emotion in self._extractor.go_emotions:
+            #### annotate
+            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
+            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+        for emotion in self._extractor._ekman_emotions:
+            ### annotate
+            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
+            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+        for emotion in self._extractor._sentiments:
+            ### annotate
+            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
+            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
