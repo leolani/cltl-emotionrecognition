@@ -72,7 +72,7 @@ class EmotionExtractionService:
                          self._intentions, self._active_intentions, event)
             return
         utterance= event.payload.signal.text
-        emotions = self._extractor.analyze(utterance)
+        emotions = self._extractor.analyze(utterance, self._speaker, None)
        # capsule = self._emotions_to_capsules(emotions, event.payload.signal)
         response = self._extractor.respond(self._speaker)
         if response:
