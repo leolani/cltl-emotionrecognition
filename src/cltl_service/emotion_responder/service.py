@@ -1,19 +1,19 @@
 import logging
 from typing import List
-from dataclasses import asdict
 from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
 from cltl.combot.event.emissor import TextSignalEvent
-from cltl.emotion_extraction.api import EmotionExtractor
+from cltl.emotion_extraction.api import Emotion
+from cltl.emotion_responder.api import EmotionResponder
 from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
 
 logger = logging.getLogger(__name__)
 
-class EmotionExtractionService:
+class EmotionResponderService:
     @classmethod
-    def from_config(cls, extractor: EmotionExtractor, event_bus: EventBus, resource_manager: ResourceManager,
+    def from_config(cls, extractor: EmotionResponder, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
         config = config_manager.get_config("cltl.text_emotion_extraction")
 
@@ -22,7 +22,7 @@ class EmotionExtractionService:
                    extractor, event_bus, resource_manager)
 
     def __init__(self, input_topic: str, output_topic: str, scenario_topic: str,
-                 intention_topic: str, intentions: List[str], extractor: EmotionExtractor,
+                 intention_topic: str, intentions: List[str], extractor: EmotionResponder,
                  event_bus: EventBus, resource_manager: ResourceManager):
         self._extractor = extractor
 

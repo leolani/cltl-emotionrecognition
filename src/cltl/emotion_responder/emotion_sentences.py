@@ -1,7 +1,7 @@
 import random
 
 import cltl.emotion_extraction.emotion_mappings as mappings
-
+from cltl.emotion_extraction.api import EmotionTypes
 """
 Sets of Emotion Response Phrases to add variety (using the random.choice function)
 """
@@ -19,6 +19,8 @@ def respond_to_sentiment (emotions: []) -> str:
     result = []
 
     for emotion in emotions:
+        if not emotion.type==EmotionTypes.SENTIMENT:
+            continue
         if emotion['label']==mappings.Sentiment.POSITIVE:
             result.append(random.choice(SentimentPositive))
         elif emotion['label']==mappings.Sentiment.NEGATIVE:
@@ -36,6 +38,8 @@ def respond_to_ekman (emotions: []) -> str:
     result = []
 
     for emotion in emotions:
+        if not emotion.type==EmotionTypes.EKMAN:
+            continue
         if emotion['label']==mappings.EkmanEmotion.ANGER:
             result.append(random.choice(Ekman_ANGER))
         elif emotion['label']==mappings.EkmanEmotion.DISGUST:
@@ -81,6 +85,8 @@ GO_CONFUSION = ["I thin kyou are confused. I am sorry for that"]
 def respond_to_go (emotions: []) -> str:
     result = []
     for emotion in emotions:
+        if not emotion.type==EmotionTypes.GO:
+            continue
         if emotion['label']==mappings.GoEmotion.AMUSEMENT:
             result.append(random.choice(GO_AMUSEMENT))
         elif emotion['label']==mappings.GoEmotion.EXCITEMENT:

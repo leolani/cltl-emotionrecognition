@@ -2,8 +2,7 @@ import abc
 import dataclasses
 import random
 from enum import Enum
-from emissor.representation.scenario import TextSignal, ImageSignal, AudioSignal
-import emotion_sentences as responses
+from emissor.representation.scenario import ImageSignal, AudioSignal
 from typing import Optional
 
 class EmotionTypes(Enum):
@@ -50,15 +49,4 @@ class EmotionExtractor(abc.ABC):
     # @TODO
     def _extract_face_emotions(self, imageSignal: ImageSignal, source: str):
         raise NotImplementedError()
-
-    def _respond_to_emotions(self, speaker_name: str = None) -> str:
-        results = []
-        results.extend(responses.respond_to_go(self.go_emotions))
-        results.extend(responses.respond_to_ekman(self.ekman_emotions))
-        results.extend(responses.respond_to_sentiment(self.sentiments))
-        if results:
-            say = "{}{}".format(random.choice(self.ADDRESS), f" {speaker_name}," if speaker_name else "")
-            for result in results:
-                say += "," + result
-            return say
 
