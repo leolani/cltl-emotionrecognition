@@ -4,7 +4,7 @@ from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
-from cltl.combot.event.emissor import TextSignalEvent
+from cltl.combot.event.emissor import TextSignalEvent, EmotionRecognitionEvent
 from emissor.representation.scenario import TextSignal
 from cltl.combot.infra.time_util import timestamp_now
 from cltl.emotion_responder.api import EmotionResponder
@@ -61,7 +61,7 @@ class EmotionResponderService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process(self, event: TextSignalEvent):
+    def _process(self, event: EmotionRecognitionEvent):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
