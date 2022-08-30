@@ -37,19 +37,21 @@ if __name__ == "__main__":
     '''
     for emotion in GoEmotion:
         responder = EmotionResponderImpl()
-        say = responder._respond_to_emotion(emotion, "Piek")
+        say = responder._respond_to_emotion(emotion.value, "Piek")
 
         print(emotion, say)
 
     for emotion in EkmanEmotion:
         responder = EmotionResponderImpl()
-        say = responder._respond_to_emotion(emotion, "Piek")
+        say = responder._respond_to_emotion(emotion.value, "Piek")
 
         print(emotion, say)
 
     for emotion in Sentiment:
         responder = EmotionResponderImpl()
-        say = responder._respond_to_emotion(emotion, "Piek")
+        say = responder._respond_to_emotion(emotion.value, "Piek")
 
         print(emotion, say)
+
+
 

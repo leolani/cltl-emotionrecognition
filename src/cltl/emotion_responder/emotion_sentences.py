@@ -17,9 +17,9 @@ SentimentNegative = ["Why are you so negative?",
 
 
 def respond_to_sentiment(emotion: str):
-    if emotion == mappings.Sentiment.POSITIVE:
+    if emotion == mappings.Sentiment.POSITIVE.value:
         return random.choice(SentimentPositive)
-    elif emotion == mappings.Sentiment.NEGATIVE:
+    elif emotion == mappings.Sentiment.NEGATIVE.value:
         return random.choice(SentimentNegative)
     else:
         return None
@@ -34,17 +34,17 @@ Ekman_SURPRISE = ["I did not expect that!", "This is completely new for me", "I 
 
 
 def respond_to_ekman(emotion: str):
-    if emotion == mappings.EkmanEmotion.ANGER:
+    if emotion == mappings.EkmanEmotion.ANGER.value:
         return random.choice(Ekman_ANGER)
-    elif emotion == mappings.EkmanEmotion.DISGUST:
+    elif emotion == mappings.EkmanEmotion.DISGUST.value:
         return random.choice(Ekman_DISGUST)
-    elif emotion == mappings.EkmanEmotion.FEAR:
+    elif emotion == mappings.EkmanEmotion.FEAR.value:
         return random.choice(Ekman_FEAR)
-    elif emotion == mappings.EkmanEmotion.JOY:
+    elif emotion == mappings.EkmanEmotion.JOY.value:
         return random.choice(Ekman_JOY)
-    elif emotion == mappings.EkmanEmotion.SADNESS:
+    elif emotion == mappings.EkmanEmotion.SADNESS.value:
         return random.choice(Ekman_SADNESS)
-    elif emotion == mappings.EkmanEmotion.SURPRISE:
+    elif emotion == mappings.EkmanEmotion.SURPRISE.value:
         return random.choice(Ekman_SURPRISE)
     else:
         return None
@@ -80,59 +80,59 @@ GO_CONFUSION = ["I think you got confused. I am sorry for that"]
 
 
 def respond_to_go(emotion: str):
-    if emotion == mappings.GoEmotion.AMUSEMENT:
+    if emotion == mappings.GoEmotion.AMUSEMENT.value:
         return random.choice(GO_AMUSEMENT)
-    elif emotion == mappings.GoEmotion.EXCITEMENT:
+    elif emotion == mappings.GoEmotion.EXCITEMENT.value:
         return random.choice(GO_EXCITEMENT)
-    elif emotion == mappings.GoEmotion.JOY:
+    elif emotion == mappings.GoEmotion.JOY.value:
         return random.choice(GO_JOY)
-    elif emotion == mappings.GoEmotion.LOVE:
+    elif emotion == mappings.GoEmotion.LOVE.value:
         return random.choice(GO_LOVE)
-    elif emotion == mappings.GoEmotion.DESIRE:
+    elif emotion == mappings.GoEmotion.DESIRE.value:
         return random.choice(GO_DESIRE)
-    elif emotion == mappings.GoEmotion.OPTIMISM:
+    elif emotion == mappings.GoEmotion.OPTIMISM.value:
         return random.choice(GO_OPTIMISM)
-    elif emotion == mappings.GoEmotion.CARING:
+    elif emotion == mappings.GoEmotion.CARING.value:
         return random.choice(GO_CARING)
-    elif emotion == mappings.GoEmotion.PRIDE:
+    elif emotion == mappings.GoEmotion.PRIDE.value:
         return random.choice(GO_PRIDE)
-    elif emotion == mappings.GoEmotion.ADMIRATION:
+    elif emotion == mappings.GoEmotion.ADMIRATION.value:
         return random.choice(GO_ADMIRATION)
-    elif emotion == mappings.GoEmotion.GRATITUDE:
+    elif emotion == mappings.GoEmotion.GRATITUDE.value:
         return random.choice(GO_GRATITUDE)
-    elif emotion == mappings.GoEmotion.RELIEF:
+    elif emotion == mappings.GoEmotion.RELIEF.value:
         return random.choice(GO_RELIEF)
-    elif emotion == mappings.GoEmotion.APPROVAL:
+    elif emotion == mappings.GoEmotion.APPROVAL.value:
         return random.choice(GO_APPROVAL)
-    elif emotion == mappings.GoEmotion.FEAR:
+    elif emotion == mappings.GoEmotion.FEAR.value:
         return random.choice(GO_FEAR)
-    elif emotion == mappings.GoEmotion.NERVOUSNESS:
+    elif emotion == mappings.GoEmotion.NERVOUSNESS.value:
         return random.choice(GO_NERVOUSNESS)
-    elif emotion == mappings.GoEmotion.REMORSE:
+    elif emotion == mappings.GoEmotion.REMORSE.value:
         return random.choice(GO_REMORSE)
-    elif emotion == mappings.GoEmotion.EMBARRASSMENT:
+    elif emotion == mappings.GoEmotion.EMBARRASSMENT.value:
         return random.choice(GO_EMBARRASSMENT)
-    elif emotion == mappings.GoEmotion.DISAPPOINTMENT:
+    elif emotion == mappings.GoEmotion.DISAPPOINTMENT.value:
         return random.choice(GO_DISAPPOINTMENT)
-    elif emotion == mappings.GoEmotion.SADNESS:
+    elif emotion == mappings.GoEmotion.SADNESS.value:
         return random.choice(GO_SADNESS)
-    elif emotion == mappings.GoEmotion.GRIEF:
+    elif emotion == mappings.GoEmotion.GRIEF.value:
         return random.choice(GO_GRIEF)
-    elif emotion == mappings.GoEmotion.DISGUST:
+    elif emotion == mappings.GoEmotion.DISGUST.value:
         return random.choice(GO_DISGUST)
-    elif emotion == mappings.GoEmotion.ANGER:
+    elif emotion == mappings.GoEmotion.ANGER.value:
         return random.choice(GO_ANGER)
-    elif emotion == mappings.GoEmotion.ANNOYANCE:
+    elif emotion == mappings.GoEmotion.ANNOYANCE.value:
         return random.choice(GO_ANNOYANCE)
-    elif emotion == mappings.GoEmotion.DISAPPROVAL:
+    elif emotion == mappings.GoEmotion.DISAPPROVAL.value:
         return random.choice(GO_DISAPPROVAL)
-    elif emotion == mappings.GoEmotion.REALIZATION:
+    elif emotion == mappings.GoEmotion.REALIZATION.value:
         return random.choice(GO_REALIZATION)
-    elif emotion == mappings.GoEmotion.SURPRISE:
+    elif emotion == mappings.GoEmotion.SURPRISE.value:
         return random.choice(GO_SURPRISE)
-    elif emotion == mappings.GoEmotion.CURSIOSITY:
+    elif emotion == mappings.GoEmotion.CURSIOSITY.value:
         return random.choice(GO_CURIOSITY)
-    elif emotion == mappings.GoEmotion.CONFUSION:
+    elif emotion == mappings.GoEmotion.CONFUSION.value:
         return random.choice(GO_CONFUSION)
     else:
         return None
@@ -141,15 +141,15 @@ def respond_to_go(emotion: str):
 def respond_to_emotion_lists(emotions: []) -> []:
     result = []
     for emotion in emotions:
-        if emotion.type == EmotionTypes.GO:
+        if emotion.type == EmotionTypes.GO.value:
             response = respond_to_go(emotion)
             if response:
                 result.append(response)
-        elif emotion.type == EmotionTypes.EKMAN:
+        elif emotion.type == EmotionTypes.EKMAN.value:
             response = respond_to_ekman(emotion)
             if response:
                 result.append(response)
-        elif emotion.type == EmotionTypes.SENTIMENT:
+        elif emotion.type == EmotionTypes.SENTIMENT.value:
             response = respond_to_sentiment(emotion)
             if response:
                 result.append(response)

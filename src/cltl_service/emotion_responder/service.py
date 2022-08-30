@@ -71,10 +71,12 @@ class EmotionResponderService:
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
-        emotion = event.payload.signal.text
-        response = self._responder._respond_to_emotions(emotion, self._speaker)
-        emotion_event = self._create_payload(response)
-        self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+
+        emotions = [annotation.value for mention in event.payload.mentions for annotation in mention.annotations]
+        for emotion in emotions:
+            response = self._responder._respond_to_emotions(emotion, self._speaker)
+            emotion_event = self._create_payload(response)
+            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
 
     def _create_payload(self, response):
         signal = TextSignal.for_scenario(None, timestamp_now(), timestamp_now(), None, response)
