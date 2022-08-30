@@ -5,9 +5,9 @@ from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
 from cltl.combot.event.emissor import TextSignalEvent
-from cltl.emotion_extraction.api import Emotion
+from emissor.representation.scenario import TextSignal
+from cltl.combot.infra.time_util import timestamp_now
 from cltl.emotion_responder.api import EmotionResponder
-from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class EmotionResponderService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process(self, event: TextSignalEvent, emotions:[Emotion]):
+    def _process(self, event: TextSignalEvent):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
@@ -71,6 +71,11 @@ class EmotionResponderService:
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
-        response = self._responder._respond_to_emotions(emotions, self._speaker)
-        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, response)
+        emotion = event.payload.signal.text
+        response = self._responder._respond_to_emotions(emotion, self._speaker)
+        emotion_event = self._create_payload(response)
         self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+
+    def _create_payload(self, response):
+        signal = TextSignal.for_scenario(None, timestamp_now(), timestamp_now(), None, response)
+        return TextSignalEvent.for_agent(signal)

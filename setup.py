@@ -14,7 +14,7 @@ setup(
     package_dir={'': 'src'},
     packages=find_namespace_packages(include=['cltl.*', 'cltl_service.*'], where='src'),
     data_files=[('VERSION', ['VERSION'])],
-    url="https://github.com/leolani/cltl-mention-detection",
+    url="https://github.com/leolani/cltl-emotionrecognition",
     license='MIT License',
     author='CLTL',
     author_email='t.baier@vu.nl',
@@ -26,7 +26,7 @@ setup(
     extras_require={
         "impl": [
             "numpy",
-            "spacy"
+            "nltk"
         ],
         "service": [
             "cltl.face-recognition",
