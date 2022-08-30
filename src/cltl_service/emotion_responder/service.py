@@ -13,18 +13,18 @@ logger = logging.getLogger(__name__)
 
 class EmotionResponderService:
     @classmethod
-    def from_config(cls, extractor: EmotionResponder, event_bus: EventBus, resource_manager: ResourceManager,
+    def from_config(cls, responder: EmotionResponder, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
-        config = config_manager.get_config("cltl.text_emotion_extraction")
+        config = config_manager.get_config("cltl.text_emotion_responder")
 
         return cls(config.get("topic_input"), config.get("topic_output"), config.get("topic_scenario"),
                    config.get("topic_intention"), config.get("intentions", multi=True),
-                   extractor, event_bus, resource_manager)
+                   responder, event_bus, resource_manager)
 
     def __init__(self, input_topic: str, output_topic: str, scenario_topic: str,
-                 intention_topic: str, intentions: List[str], extractor: EmotionResponder,
+                 intention_topic: str, intentions: List[str], responder: EmotionResponder,
                  event_bus: EventBus, resource_manager: ResourceManager):
-        self._extractor = extractor
+        self._responder = responder
 
         self._event_bus = event_bus
         self._resource_manager = resource_manager
@@ -61,7 +61,7 @@ class EmotionResponderService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process_and_annotate_text_signal(self, event: TextSignalEvent):
+    def _process(self, event: TextSignalEvent, emotions:[Emotion]):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
@@ -71,18 +71,6 @@ class EmotionResponderService:
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
-        utterance= event.payload.signal.text
-        self._extractor.__extract_text_emotions(utterance, self._speaker)
-
-        for emotion in self._extractor.go_emotions:
-            #### annotate
-            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
-        for emotion in self._extractor._ekman_emotions:
-            ### annotate
-            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
-        for emotion in self._extractor._sentiments:
-            ### annotate
-            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+        response = self._responder._respond_to_emotions(emotions, self._speaker)
+        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, response)
+        self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))

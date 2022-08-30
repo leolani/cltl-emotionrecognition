@@ -2,5 +2,5 @@ import abc
 
 
 class EmotionResponder(abc.ABC):
-    def respond(self, statement: str) -> str:
+    def respond(self, emotion: []) -> str:
         raise NotImplementedError("")

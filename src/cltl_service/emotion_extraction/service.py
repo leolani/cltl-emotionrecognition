@@ -61,7 +61,7 @@ class EmotionExtractionService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process_and_annotate_text_signal(self, event: TextSignalEvent):
+    def _process(self, event: TextSignalEvent):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
