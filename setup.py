@@ -24,14 +24,14 @@ setup(
     python_requires='>=3.8',
     install_requires=['cltl.combot'],
     extras_require={
-        "impl": [
+        "nltk": [
             "numpy",
             "nltk"
         ],
+        "go": [
+            "transformers",
+        ],
         "service": [
-            "cltl.face-recognition",
-            "cltl.object-recognition",
-            "cltl.brain",
             "emissor",
             "flask"
         ]}

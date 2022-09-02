@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/cltl-emotionrecognition.iml" filepath="$PROJECT_DIR$/.idea/cltl-emotionrecognition.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../leolani-mmai-parent/cltl-object-recognition/.idea/cltl-object-recognition.iml" filepath="$PROJECT_DIR$/../leolani-mmai-parent/cltl-object-recognition/.idea/cltl-object-recognition.iml" />
-    </modules>
-  </component>
-</project>
