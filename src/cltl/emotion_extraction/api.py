@@ -1,15 +1,11 @@
 import abc
 import dataclasses
-import random
-from enum import Enum
-from emissor.representation.scenario import ImageSignal, AudioSignal
-from typing import Optional
+from functools import total_ordering
+from typing import Optional, Any, List, Union
 
-class EmotionTypes(Enum):
-    EKMAN = "ekman"
-    GO = "go"
-    SENTIMENT = "sentiment"
+from cltl.emotion_extraction.emotion_mappings import EmotionType, GoEmotion, EkmanEmotion, Sentiment
 
+@total_ordering
 @dataclasses.dataclass
 class Emotion:
     """
@@ -19,34 +15,50 @@ class Emotion:
     "confidence"
     "source"
     """
-    # TODO switch to np.typing.ArrayLike
-    type: Optional[EmotionTypes]
-    value: Optional[str]
+    # TODO Collection[EmotionType]?
+    type: EmotionType
+    value: str
     confidence: Optional[float]
     source: Optional[str]
 
+    def to_enum(self) -> Union[GoEmotion, EkmanEmotion, Sentiment]:
+        if self.type == EmotionType.GO:
+            return GoEmotion[self.value.upper()]
+        if self.type == EmotionType.EKMAN:
+            return EkmanEmotion[self.value.upper()]
+        if self.type == EmotionType.SENTIMENT:
+            return Sentiment[self.value.upper()]
+
+        raise ValueError("Unknown type: " + self.type)
+
 
 class EmotionExtractor(abc.ABC):
+    """Abstract EmotionExtraction Object
+    Call any of the modality specific emotion extraction function.
+    """
 
-    def __init__(self):
-        """
-        Abstract EmotionExtraction Object: call any of the modality specific emotion extraction function
+    def extract_text_emotions(self, utterance: str, source: str) -> List[Emotion]:
+        """Recognize the emotions of a given utterance.
 
         Parameters
         ----------
+        utterance : str
+            The utterance to be analyzed.
+        source : str
+            The source of the utterance.
+
+        Returns
+        -------
+        List[Emotion]
+            The Emotions extracted from the utterance.
         """
-
-        self._go_emotions = [Emotion]
-        self._ekman_emotions = [Emotion]
-        self._sentiments = [Emotion]
-
-    def _extract_text_emotions(self, utterance:str, source: str):
         raise NotImplementedError()
 
     # @TODO
-    def _extract_audio_emotions(self, audioSignal: AudioSignal, source: str):
+    def extract_audio_emotions(self, audio: Any, source: str) -> List[Emotion]:
         raise NotImplementedError()
+
     # @TODO
-    def _extract_face_emotions(self, imageSignal: ImageSignal, source: str):
+    def extract_face_emotions(self, image: Any, source: str) -> List[Emotion]:
         raise NotImplementedError()
 

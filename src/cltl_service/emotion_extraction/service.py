@@ -1,15 +1,17 @@
 import logging
 from typing import List
-from dataclasses import asdict
+
+from cltl.combot.event.emissor import TextSignalEvent
 from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
-from cltl.combot.event.emissor import TextSignalEvent
+
 from cltl.emotion_extraction.api import EmotionExtractor
 from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
 
 logger = logging.getLogger(__name__)
+
 
 class EmotionExtractionService:
     @classmethod
@@ -71,18 +73,9 @@ class EmotionExtractionService:
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
-        utterance= event.payload.signal.text
-        self._extractor.__extract_text_emotions(utterance, self._speaker)
 
-        for emotion in self._extractor.go_emotions:
-            #### annotate
-            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
-        for emotion in self._extractor._ekman_emotions:
-            ### annotate
-            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
-        for emotion in self._extractor._sentiments:
-            ### annotate
-            emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotion)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+        utterance= event.payload.signal.text
+        emotions = self._extractor.extract_text_emotions(utterance, self._speaker)
+
+        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotions)
+        self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
