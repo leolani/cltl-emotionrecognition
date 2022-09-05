@@ -19,6 +19,8 @@ class TestEmotions(unittest.TestCase):
         self.assertEqual(EmotionType.GO, emotions[0].type)
         self.assertEqual("amusement", emotions[0].value)
         self.assertEqual(EmotionType.EKMAN, emotions[1].type)
+        # TODO averaging over GO scores doesn't work well,
+        # Eventually cut-off by the threshold before averaging or normalize by the mapping size in some way
         self.assertEqual("neutral", emotions[1].value)
         self.assertEqual(EmotionType.EKMAN, emotions[2].type)
         self.assertEqual("joy", emotions[2].value)
