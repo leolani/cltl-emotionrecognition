@@ -2,8 +2,8 @@ from enum import Enum, auto
 
 
 class EmotionType(Enum):
-    EKMAN = auto()
     GO = auto()
+    EKMAN = auto()
     SENTIMENT = auto()
 
 
@@ -79,6 +79,7 @@ def get_averaged_mapped_scores(emotion_map, go_emotion_scores):
     return sort_predictions(averaged_mapped_scores)
 
 
+# TODO use enums here to avoid duplication
 # MAP EKMAN TO SENTIMENT
 ekman_sentiment_map={
     "positive": ["joy", "positive"],
