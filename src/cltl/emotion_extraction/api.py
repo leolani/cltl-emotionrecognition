@@ -5,7 +5,6 @@ from typing import Optional, Any, List, Union
 
 from cltl.emotion_extraction.emotion_mappings import EmotionType, GoEmotion, EkmanEmotion, Sentiment
 
-@total_ordering
 @dataclasses.dataclass
 class Emotion:
     """

@@ -3,8 +3,9 @@ import time
 from typing import Any, List
 
 from transformers import pipeline
-from cltl.emotion_extraction.api import EmotionExtractor, EmotionType, Emotion
+
 import cltl.emotion_extraction.emotion_mappings as mappings
+from cltl.emotion_extraction.api import EmotionExtractor, EmotionType, Emotion
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ _THRESHOLD = 0.5
 #https://github.com/google-research/google-research/blob/master/goemotions/goemotions_model_card.pdf
 
 
-class GoEmotionDetector (EmotionExtractor):
+class GoEmotionDetector(EmotionExtractor):
     def __init__(self, model: str = _MODEL_NAME):
         self.emotion_pipeline = pipeline('sentiment-analysis',  model=model, return_all_scores=True)
 
@@ -38,6 +39,9 @@ class GoEmotionDetector (EmotionExtractor):
         -------
         emotion: one of neutral, joy, surprise, anger, sadness, disgust, and fear
         """
+        if not utterance:
+            return []
+
         logger.debug(f"sending utterance to server...")
         start = time.time()
 
@@ -62,7 +66,7 @@ class GoEmotionDetector (EmotionExtractor):
     def _filter_by_threshold(self, emotion_type, results, source):
         return [Emotion(type=emotion_type, value=result['label'], confidence=result['score'], source=source)
                 for result in results
-                if result['score'] / results[0]['score'] > _THRESHOLD]
+                if result['score'] > 0 and result['score'] / results[0]['score'] > _THRESHOLD]
 
     def _log_results(self, emotions, response, start):
         logger.info("got %s from server in %s sec", response, time.time() - start)
