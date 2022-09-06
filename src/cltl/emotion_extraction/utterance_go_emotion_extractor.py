@@ -23,48 +23,38 @@ class GoEmotionDetector(EmotionExtractor):
     def __init__(self, model: str = _MODEL_NAME):
         self.emotion_pipeline = pipeline('sentiment-analysis',  model=model, return_all_scores=True)
 
-    def extract_audio_emotions(self, audio_signal: Any, source: str) -> List[Emotion]:
+    def extract_audio_emotions(self, audio_signal: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    def extract_face_emotions(self, image_signal: Any, source: str) -> List[Emotion]:
+    def extract_face_emotions(self, image_signal: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    def extract_text_emotions(self, utterance: str, source: str) -> List[Emotion]:
-        """Recognize the speaker emotion of a given utterance.
-        Args
-        ----
-        utterance:
-        url_erc: the url of the emoberta api server.
-        Returns
-        -------
-        emotion: one of neutral, joy, surprise, anger, sadness, disgust, and fear
-        """
+    def extract_text_emotions(self, utterance: str) -> List[Emotion]:
         if not utterance:
             return []
 
         logger.debug(f"sending utterance to server...")
         start = time.time()
 
-        source = source
         emotions = []
 
         response = self.emotion_pipeline(utterance)
 
         emotion_labels = mappings.sort_predictions(response[0])
-        emotions.extend(self._filter_by_threshold(EmotionType.GO, emotion_labels, source))
+        emotions.extend(self._filter_by_threshold(EmotionType.GO, emotion_labels))
 
         ekman_labels = mappings.get_averaged_mapped_scores(mappings.go_ekman_map, emotion_labels)
-        emotions.extend(self._filter_by_threshold(EmotionType.EKMAN, ekman_labels, source))
+        emotions.extend(self._filter_by_threshold(EmotionType.EKMAN, ekman_labels))
 
         sentiment_labels = mappings.get_averaged_mapped_scores(mappings.go_sentiment_map, emotion_labels)
-        emotions.extend(self._filter_by_threshold(EmotionType.SENTIMENT, sentiment_labels, source))
+        emotions.extend(self._filter_by_threshold(EmotionType.SENTIMENT, sentiment_labels))
 
         self._log_results(emotions, response, start)
 
         return emotions
 
-    def _filter_by_threshold(self, emotion_type, results, source):
-        return [Emotion(type=emotion_type, value=result['label'], confidence=result['score'], source=source)
+    def _filter_by_threshold(self, emotion_type, results):
+        return [Emotion(type=emotion_type, value=result['label'], confidence=result['score'])
                 for result in results
                 if result['score'] > 0 and result['score'] / results[0]['score'] > _THRESHOLD]
 
@@ -83,4 +73,4 @@ class GoEmotionDetector(EmotionExtractor):
 if __name__ == "__main__":
     utterance = "I love cats."
     analyzer = GoEmotionDetector()
-    print(analyzer.extract_text_emotions(utterance, "Piek"))
+    print(analyzer.extract_text_emotions(utterance))

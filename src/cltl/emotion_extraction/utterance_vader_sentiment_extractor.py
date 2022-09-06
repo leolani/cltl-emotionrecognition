@@ -12,14 +12,14 @@ class VaderSentimentDetector(EmotionExtractor):
         super().__init__()
         self._vader = SentimentIntensityAnalyzer()
 
-    def extract_text_emotions(self, utterance: str, source: str) -> List[Emotion]:
+    def extract_text_emotions(self, utterance: str) -> List[Emotion]:
         logging.debug(f"sending utterance to vader...")
         start = time.time()
 
         scores = self._vader.polarity_scores(utterance)
 
         label = {"compound": "compound", "neg": "negative", "pos": "postive", "neu": "neutral"}
-        emotions = [Emotion(type=EmotionType.SENTIMENT, value=label[key], confidence=score, source=source)
+        emotions = [Emotion(type=EmotionType.SENTIMENT, value=label[key], confidence=score)
                     for key, score in scores.items()
                     if score > 0]
 
@@ -30,14 +30,14 @@ class VaderSentimentDetector(EmotionExtractor):
 
         return emotions
 
-    def extract_audio_emotions(self, audio: Any, source: str) -> List[Emotion]:
+    def extract_audio_emotions(self, audio: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    def extract_face_emotions(self, image: Any, source: str) -> List[Emotion]:
+    def extract_face_emotions(self, image: Any) -> List[Emotion]:
         raise NotImplementedError()
 
 
 if __name__ == "__main__":
     utterance = "I love cats."
     analyzer = VaderSentimentDetector()
-    print(analyzer.extract_text_emotions(utterance, "Piek"))
+    print(analyzer.extract_text_emotions(utterance))

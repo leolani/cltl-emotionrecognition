@@ -63,7 +63,7 @@ class EmotionExtractionService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process(self, event: TextSignalEvent):
+    def _process(self, event: Event[TextSignalEvent]):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
@@ -75,7 +75,7 @@ class EmotionExtractionService:
             return
 
         utterance= event.payload.signal.text
-        emotions = self._extractor.extract_text_emotions(utterance, self._speaker)
+        emotions = self._extractor.extract_text_emotions(utterance)
 
         emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotions)
         self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))

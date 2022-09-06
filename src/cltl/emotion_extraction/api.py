@@ -1,9 +1,9 @@
 import abc
 import dataclasses
-from functools import total_ordering
 from typing import Optional, Any, List, Union
 
 from cltl.emotion_extraction.emotion_mappings import EmotionType, GoEmotion, EkmanEmotion, Sentiment
+
 
 @dataclasses.dataclass
 class Emotion:
@@ -18,7 +18,6 @@ class Emotion:
     type: EmotionType
     value: str
     confidence: Optional[float]
-    source: Optional[str]
 
     def to_enum(self) -> Union[GoEmotion, EkmanEmotion, Sentiment]:
         if self.type == EmotionType.GO:
@@ -36,15 +35,13 @@ class EmotionExtractor(abc.ABC):
     Call any of the modality specific emotion extraction function.
     """
 
-    def extract_text_emotions(self, utterance: str, source: str) -> List[Emotion]:
+    def extract_text_emotions(self, utterance: str) -> List[Emotion]:
         """Recognize the emotions of a given utterance.
 
         Parameters
         ----------
         utterance : str
             The utterance to be analyzed.
-        source : str
-            The source of the utterance.
 
         Returns
         -------
@@ -54,10 +51,9 @@ class EmotionExtractor(abc.ABC):
         raise NotImplementedError()
 
     # @TODO
-    def extract_audio_emotions(self, audio: Any, source: str) -> List[Emotion]:
+    def extract_audio_emotions(self, audio: Any) -> List[Emotion]:
         raise NotImplementedError()
 
     # @TODO
-    def extract_face_emotions(self, image: Any, source: str) -> List[Emotion]:
+    def extract_face_emotions(self, image: Any) -> List[Emotion]:
         raise NotImplementedError()
-

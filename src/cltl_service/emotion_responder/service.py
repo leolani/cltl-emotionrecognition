@@ -62,13 +62,13 @@ class EmotionResponderService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process(self, event: EmotionRecognitionEvent):
+    def _process(self, event: Event[EmotionRecognitionEvent]):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
             return
 
-        if self._intentions and not (self._active_intentions & self._intentions):
+        if self._intentions and not (self._active_intentions and self._intentions):
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return

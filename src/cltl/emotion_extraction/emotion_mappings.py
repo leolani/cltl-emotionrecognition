@@ -54,7 +54,7 @@ class GoEmotion(Enum):
     NEUTRAL = auto()
 
 
-### Use a mapping to get a dictionary of the mapped GO_emotion scores
+# Use a mapping to get a dictionary of the mapped GO_emotion scores
 def get_mapped_scores(emotion_map, go_emotion_scores):
     mapped_scores = {}
 
@@ -68,7 +68,8 @@ def get_mapped_scores(emotion_map, go_emotion_scores):
                     mapped_scores[key].append(prediction['score'])
     return mapped_scores
 
-### Get the averaged score for an emotion or sentiment from the GO_emotion scores mapped according to the emotion_map
+
+# Get the averaged score for an emotion or sentiment from the GO_emotion scores mapped according to the emotion_map
 def get_averaged_mapped_scores(emotion_map, go_emotion_scores):
     averaged_mapped_scores = []
     mapped_scores = get_mapped_scores(emotion_map, go_emotion_scores)
@@ -88,7 +89,7 @@ ekman_sentiment_map={
 }
 
 
-### Mapping GO_Emotions to sentiment values
+# Mapping GO_Emotions to sentiment values
 go_sentiment_map={
     "positive": ["curiosity", "amusement", "excitement", "joy", "love", "desire", "optimism", "caring", "pride", "admiration", "gratitude", "relief", "approval"],
     "negative": ["fear",  "confusion", "nervousness", "remorse", "embarrassment", "disappointment", "sadness", "grief", "disgust", "anger", "annoyance", "disapproval"],
@@ -96,7 +97,7 @@ go_sentiment_map={
 }
 
 
-### Mapping GO_Emotions to Ekman values
+# Mapping GO_Emotions to Ekman values
 go_ekman_map={
     "anger": ["anger", "annoyance", "disapproval"],
     "disgust": ["disgust"],
@@ -108,7 +109,7 @@ go_ekman_map={
 }
 
 
-### Sort a list of results in JSON format by the value of the score element
+# Sort a list of results in JSON format by the value of the score element
 def sort_predictions(predictions):
     return sorted(predictions, key=lambda x: x['score'], reverse=True)
 

@@ -21,7 +21,7 @@ class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
         image with Face Annotation with value None.
         """
         segment = text_signal.ruler
-        annotations = [Annotation(Emotion.__class__.__name, emotion, __name__, timestamp_now())
+        annotations = [Annotation(Emotion.__class__.__name__, emotion, __name__, timestamp_now())
                        for emotion in emotions]
 
         return Mention(str(uuid.uuid4()), [segment], annotations)

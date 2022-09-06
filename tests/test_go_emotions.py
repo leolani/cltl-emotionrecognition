@@ -1,8 +1,6 @@
 import unittest
 
-from cltl.emotion_extraction.api import EmotionExtractor
-
-#@TODO to be completed
+# @TODO to be completed
 from cltl.emotion_extraction.emotion_mappings import EmotionType
 from cltl.emotion_extraction.utterance_go_emotion_extractor import GoEmotionDetector
 
@@ -12,7 +10,7 @@ class TestEmotions(unittest.TestCase):
         self._emotion_extractor = GoEmotionDetector()
 
     def test_analyze_text_with_emotion(self):
-        emotions = self._emotion_extractor.extract_text_emotions("I am so hapy for you.", "Piek")
+        emotions = self._emotion_extractor.extract_text_emotions("I am so hapy for you.")
 
         self.assertEqual(5, len(emotions))
 
@@ -30,6 +28,5 @@ class TestEmotions(unittest.TestCase):
         self.assertEqual("neutral", emotions[4].value)
 
     def test_analyze_empty(self):
-        emotions = self._emotion_extractor.extract_text_emotions("", "")
+        emotions = self._emotion_extractor.extract_text_emotions("")
         self.assertEqual(0, len(emotions))
-

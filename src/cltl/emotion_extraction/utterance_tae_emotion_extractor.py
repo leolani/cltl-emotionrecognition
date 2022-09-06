@@ -35,26 +35,16 @@ class EmobertaEmotionDetectorProxy(EmotionExtractor):
         detect.result()
         executor.shutdown()
 
-    def extract_text_emotions(self, utterance: str, source:str):
-        """Recognize the speaker emotion of a given utterance.
-        Args
-        ----
-        utterance:
-        url_erc: the url of the emoberta api server.
-        Returns
-        -------
-        emotion: one of neutral, joy, surprise, anger, sadness, disgust, and fear
-        """
+    def extract_text_emotions(self, utterance: str):
         start = time.time()
         logging.debug(f"sending utterance to server...")
 
-        source = source
         emotions = []
 
         data = {"text": utterance}
         data = jsonpickle.encode(data)
         response = requests.post(_URL, json=data)
-        logging.info("got %s from server in %s sec", response,time.time()-start)
+        logging.info("got %s from server in %s sec", response, time.time()-start)
         response = jsonpickle.decode(response.text)
 
        # emotion = max(response, key=response.get)
@@ -91,17 +81,14 @@ class EmobertaEmotionDetectorProxy(EmotionExtractor):
 
         return emotions
 
-    def extract_audio_emotions(self, audioSignal: Any, source: str) -> List[Emotion]:
+    def extract_audio_emotions(self, audio: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    def extract_face_emotions(self, imageSignal: Any, source: str) -> List[Emotion]:
+    def extract_face_emotions(self, image: Any) -> List[Emotion]:
         raise NotImplementedError()
 
 
 if __name__ == "__main__":
-    '''
-    '''
-
     utterance = "I love cats."
     analyzer = EmobertaEmotionDetectorProxy()
-    print(analyzer.extract_text_emotions(utterance, "Piek"))
+    print(analyzer.extract_text_emotions(utterance))
