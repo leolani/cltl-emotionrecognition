@@ -1,49 +1,43 @@
 import logging
 import time
+from typing import List, Any
+
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from cltl.emotion_extraction.api import EmotionExtractor, EmotionTypes, Emotion
+
+from cltl.emotion_extraction.api import EmotionExtractor, EmotionType, Emotion
+
 
 class VaderSentimentDetector(EmotionExtractor):
     def __init__(self):
         super().__init__()
         self._vader = SentimentIntensityAnalyzer()
 
-    def _extract_text_emotions(self, utterance: str, source:str):
-        """Recognize the sentiment of a given utterance.
-        Args
-        ----
-        utterance:
-        Returns
-        -------
-        sentiment: positive, negative, neutral
-        """
+    def extract_text_emotions(self, utterance: str) -> List[Emotion]:
         logging.debug(f"sending utterance to vader...")
         start = time.time()
-        self._source = source
 
         scores = self._vader.polarity_scores(utterance)
 
-        emotion = Emotion (type=EmotionTypes.SENTIMENT, value='compound', confidence=scores['compound'], source=source)
-        self._sentiments.append(emotion)
-        emotion = Emotion (type=EmotionTypes.SENTIMENT, value="negative", confidence=scores['neg'], source=source)
-        self._sentiments.append(emotion)
-        emotion = Emotion (type=EmotionTypes.SENTIMENT, value="positive", confidence=scores['pos'], source=source)
-        self._sentiments.append(emotion)
-        emotion = Emotion (type=EmotionTypes.SENTIMENT, value="neutral", confidence=scores['neu'], source=source)
-        self._sentiments.append(emotion)
+        label = {"compound": "compound", "neg": "negative", "pos": "postive", "neu": "neutral"}
+        emotions = [Emotion(type=EmotionType.SENTIMENT, value=label[key], confidence=score)
+                    for key, score in scores.items()
+                    if score > 0]
 
-        logging.info("got %s from server in %s sec", scores, time.time()-start)
-        logging.info(f"{self._sentiments} Highest scoring Sentiment!")
+        logging.info("got %s from server in %s sec", scores, time.time() - start)
+        if emotions:
+            logging.info("Highest scoring Sentiment: %s",
+                         sorted(emotions, key=lambda emotion: emotion.confidence, reverse=True)[0])
+
+        return emotions
+
+    def extract_audio_emotions(self, audio: Any) -> List[Emotion]:
+        raise NotImplementedError()
+
+    def extract_face_emotions(self, image: Any) -> List[Emotion]:
+        raise NotImplementedError()
 
 
 if __name__ == "__main__":
-    '''
-
-    '''
     utterance = "I love cats."
     analyzer = VaderSentimentDetector()
-    analyzer._extract_text_emotions(utterance, "Piek")
-
-    print("Go", analyzer._go_emotions)
-    print("Ekman", analyzer._ekman_emotions)
-    print("Sentiment", analyzer._sentiments)
+    print(analyzer.extract_text_emotions(utterance))

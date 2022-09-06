@@ -4,7 +4,8 @@ from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
-from cltl.combot.event.emissor import TextSignalEvent, EmotionRecognitionEvent
+from cltl.combot.event.emissor import TextSignalEvent
+from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
 from emissor.representation.scenario import TextSignal
 from cltl.combot.infra.time_util import timestamp_now
 from cltl.emotion_responder.api import EmotionResponder
@@ -61,22 +62,21 @@ class EmotionResponderService:
         self._topic_worker.await_stop()
         self._topic_worker = None
 
-    def _process(self, event: EmotionRecognitionEvent):
+    def _process(self, event: Event[EmotionRecognitionEvent]):
         if event.metadata.topic == self._intention_topic:
             self._active_intentions = set(event.payload.intentions)
             logger.info("Set active intentions to %s", self._active_intentions)
             return
 
-        if self._intentions and not (self._active_intentions & self._intentions):
+        if self._intentions and not (self._active_intentions and self._intentions):
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
 
         emotions = [annotation.value for mention in event.payload.mentions for annotation in mention.annotations]
-        for emotion in emotions:
-            response = self._responder._respond_to_emotions(emotion, self._speaker)
-            emotion_event = self._create_payload(response)
-            self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+        response = self._responder.respond(emotions, self._speaker)
+        response_event = self._create_payload(response)
+        self._event_bus.publish(self._output_topic, Event.for_payload(response_event))
 
     def _create_payload(self, response):
         signal = TextSignal.for_scenario(None, timestamp_now(), timestamp_now(), None, response)

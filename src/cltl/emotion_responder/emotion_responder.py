@@ -1,7 +1,10 @@
 import random
+from typing import Collection
+
+from cltl.emotion_extraction.api import Emotion
+from cltl.emotion_extraction.emotion_mappings import GoEmotion, EkmanEmotion, Sentiment, EmotionType
 from cltl.emotion_responder import emotion_sentences as responses
 from cltl.emotion_responder.api import EmotionResponder
-from cltl.emotion_extraction.emotion_mappings import GoEmotion, EkmanEmotion, Sentiment
 
 
 class EmotionResponderImpl(EmotionResponder):
@@ -18,40 +21,26 @@ class EmotionResponderImpl(EmotionResponder):
     def __init__(self):
         self.started = False
 
-    def _respond_to_emotion(self, emotion: str, speaker_name: str = None) -> str:
-        response = responses.respond_to_go(emotion)
-        if not response:
-            response = responses.respond_to_ekman(emotion)
-        if not response:
-            response = responses.respond_to_sentiment(emotion)
+    def respond(self, emotions: Collection[Emotion], speaker: str) -> str:
+        for emotion_type in EmotionType:
+            filtered_emotions = list(filter(lambda emo: emo.type == emotion_type, emotions))
+            dominant_emotion = self._get_highest_confidence(filtered_emotions)
+            response = responses.respond_to_emotion(dominant_emotion)
+            if response:
+                break
+
         if response:
-            say = "{}{}".format(random.choice(self.ADDRESS), f" {speaker_name}," if speaker_name else "")
-            say += "," + response
+            say = "{}{}".format(random.choice(self.ADDRESS), f" {speaker}" if speaker else "")
+            say += ", " + response
+
             return say
 
+        return ""
 
+    def _get_highest_confidence(self, emotions):
+        if not emotions:
+            return None
 
-if __name__ == "__main__":
-    '''
+        sorted_emos = sorted(emotions, key=lambda emo: emo.confidence if emo.confidence else 0, reverse=True)
 
-    '''
-    for emotion in GoEmotion:
-        responder = EmotionResponderImpl()
-        say = responder._respond_to_emotion(emotion.value, "Piek")
-
-        print(emotion, say)
-
-    for emotion in EkmanEmotion:
-        responder = EmotionResponderImpl()
-        say = responder._respond_to_emotion(emotion.value, "Piek")
-
-        print(emotion, say)
-
-    for emotion in Sentiment:
-        responder = EmotionResponderImpl()
-        say = responder._respond_to_emotion(emotion.value, "Piek")
-
-        print(emotion, say)
-
-
-
+        return next(iter(sorted_emos))
