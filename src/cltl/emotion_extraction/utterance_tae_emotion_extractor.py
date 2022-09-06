@@ -59,14 +59,14 @@ class EmobertaEmotionDetectorProxy(EmotionExtractor):
             if emotion['score'] / emotion_labels[0]['score'] > _THRESHOLD:
                 emotions.append({emotion['label'], emotion['score']})
 
-        ekman_labels = mappings.get_averaged_mapped_scores(mappings.go_ekman_map, emotion_labels)
+        ekman_labels = mappings.get_total_mapped_scores(mappings.go_ekman_map, emotion_labels)
         emotions.append({ekman_labels[0]['label'], ekman_labels[0]['score']})
 
         for emotion in ekman_labels[1:]:
             if emotion['score'] / ekman_labels[0]['score'] > _THRESHOLD:
                 emotions.append({emotion['label'], emotion['score']})
 
-        sentiment_labels = mappings.get_averaged_mapped_scores(mappings.go_sentiment_map, emotion_labels)
+        sentiment_labels = mappings.get_total_mapped_scores(mappings.go_sentiment_map, emotion_labels)
         emotions.append({sentiment_labels[0]['label'], sentiment_labels[0]['score']})
 
         for emotion in sentiment_labels[1:]:

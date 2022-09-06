@@ -70,14 +70,14 @@ def get_mapped_scores(emotion_map, go_emotion_scores):
 
 
 # Get the averaged score for an emotion or sentiment from the GO_emotion scores mapped according to the emotion_map
-def get_averaged_mapped_scores(emotion_map, go_emotion_scores):
-    averaged_mapped_scores = []
+def get_total_mapped_scores(emotion_map, go_emotion_scores):
+    total_mapped_scores = []
     mapped_scores = get_mapped_scores(emotion_map, go_emotion_scores)
     for emotion in mapped_scores:
         lst = mapped_scores[emotion]
-        averaged_score = sum(lst)/len(lst)
-        averaged_mapped_scores.append({'label':emotion, 'score':averaged_score})
-    return sort_predictions(averaged_mapped_scores)
+        total_score = sum(lst)
+        total_mapped_scores.append({'label':emotion, 'score':total_score})
+    return sort_predictions(total_mapped_scores)
 
 
 # TODO use enums here to avoid duplication

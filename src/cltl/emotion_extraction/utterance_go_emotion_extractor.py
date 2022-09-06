@@ -43,10 +43,10 @@ class GoEmotionDetector(EmotionExtractor):
         emotion_labels = mappings.sort_predictions(response[0])
         emotions.extend(self._filter_by_threshold(EmotionType.GO, emotion_labels))
 
-        ekman_labels = mappings.get_averaged_mapped_scores(mappings.go_ekman_map, emotion_labels)
+        ekman_labels = mappings.get_total_mapped_scores(mappings.go_ekman_map, emotion_labels)
         emotions.extend(self._filter_by_threshold(EmotionType.EKMAN, ekman_labels))
 
-        sentiment_labels = mappings.get_averaged_mapped_scores(mappings.go_sentiment_map, emotion_labels)
+        sentiment_labels = mappings.get_total_mapped_scores(mappings.go_sentiment_map, emotion_labels)
         emotions.extend(self._filter_by_threshold(EmotionType.SENTIMENT, sentiment_labels))
 
         self._log_results(emotions, response, start)
