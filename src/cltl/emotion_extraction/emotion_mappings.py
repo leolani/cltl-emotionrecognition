@@ -53,6 +53,33 @@ class GoEmotion(Enum):
     CONFUSION = auto()
     NEUTRAL = auto()
 
+class FaceEmotion(Enum):
+    AFFECTION = auto()
+    ANGER = auto()
+    ANNOYANCE = auto()
+    ANTICIPATION = auto()
+    AVERSION = auto()
+    CONFIDENCE = auto()
+    DISAPPROVAL = auto()
+    DISCONNECTION = auto()
+    DISQUIETMENT = auto()
+    DOUBT_CONFUSION = 'Doubt/Confusion'
+    EMBARRASSMENT = auto()
+    ENGAGEMENT = auto()
+    ESTEEM = auto()
+    EXCITEMENT = auto()
+    FATIGUE = auto()
+    FEAR = auto()
+    HAPPINESS = auto()
+    PAIN = auto()
+    PEACE = auto()
+    PLEASURE = auto()
+    SADNESS = auto()
+    SENSITIVITY = auto()
+    SUFFERING = auto()
+    SURPRISE = auto()
+    SYMPATHY = auto()
+    YEARNING = auto()
 
 # Use a mapping to get a dictionary of the mapped GO_emotion scores
 def get_mapped_scores(emotion_map, go_emotion_scores):
@@ -108,6 +135,21 @@ go_ekman_map={
     "neutral": ["neutral"]
 }
 
+face_ekman_map={
+    "joy" : ['Affection', 'Confidence', 'Esteem', 'Excitement', 'Happiness',  'Peace', 'Pleasure',  'Sympathy'],
+    "anger": ['Anger', 'Annoyance', 'Embarrassment'],
+    "fear": ['Doubt/Confusion', 'Fear', 'Pain',  'Suffering', 'Yearning'],
+    "disgust": ['Aversion', 'Disapproval', 'Disconnection', 'Embarrassment'],
+    "sadness": ['Disconnection', 'Disquietment', 'Fatigue', 'Sadness'],
+    "surprise": ['Engagement', 'Excitement', 'Sensitivity', 'Surprise'],
+    "neutral": ['Anticipation', 'Peace']
+}
+
+face_sentiment_map={
+    "positive" : ['Affection', 'Confidence', 'Esteem', 'Excitement', 'Happiness',  'Peace', 'Pleasure',  'Sympathy', 'Engagement', 'Excitement', 'Sensitivity', 'Surprise'],
+    "negative": ['Anger', 'Annoyance', 'Embarrassment', 'Doubt/Confusion', 'Fear', 'Pain',  'Suffering', 'Yearning', 'Aversion', 'Disapproval', 'Disconnection', 'Embarrassment', 'Disconnection', 'Disquietment', 'Fatigue', 'Sadness'],
+    "neutral": ['Anticipation', 'Peace']
+}
 
 # Sort a list of results in JSON format by the value of the score element
 def sort_predictions(predictions):
