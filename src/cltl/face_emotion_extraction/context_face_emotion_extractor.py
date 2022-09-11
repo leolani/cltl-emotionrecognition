@@ -144,6 +144,6 @@ if __name__ == '__main__':
     for image_file in image_files:
         bbox =[0, 0, 640, 480]
         predictions = analyzer.extract_face_emotions(image_file, bbox)
-        print(predictions)
+        print(image_file, predictions)
 
 
