@@ -4,6 +4,7 @@ from enum import Enum, auto
 class EmotionType(Enum):
     GO = auto()
     EKMAN = auto()
+    FACE = auto()
     SENTIMENT = auto()
 
 
