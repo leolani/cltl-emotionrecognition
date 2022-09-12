@@ -70,4 +70,8 @@ class GoEmotionDetector(EmotionExtractor):
 if __name__ == "__main__":
     utterance = "I love cats."
     analyzer = GoEmotionDetector()
-    print(analyzer.extract_text_emotions(utterance))
+    emotions = analyzer.extract_text_emotions(utterance)
+    emotion_json ={}
+    for emotion in emotions:
+        emotion_json.update({'type': emotion.type, 'value':emotion.value, 'confident': emotion.confidence})
+        print(emotion_json)

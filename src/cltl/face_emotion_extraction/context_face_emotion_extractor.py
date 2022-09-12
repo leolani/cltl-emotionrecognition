@@ -122,7 +122,9 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 if __name__ == '__main__':
     image_folder = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/data'
 
-    analyzer = ContextFaceEmotionExtractor()
+    MODEL_FOLDER = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/src/cltl/face_emotion_extraction/face_models'
+
+    analyzer = ContextFaceEmotionExtractor(MODEL_FOLDER)
 
     image_files = glob.glob(image_folder+'/*.png')
     for image_file in image_files:

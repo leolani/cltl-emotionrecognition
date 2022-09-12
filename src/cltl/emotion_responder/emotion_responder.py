@@ -44,3 +44,14 @@ class EmotionResponderImpl(EmotionResponder):
         sorted_emos = sorted(emotions, key=lambda emo: emo.confidence if emo.confidence else 0, reverse=True)
 
         return next(iter(sorted_emos))
+
+
+
+
+
+if __name__ == "__main__":
+    responder = EmotionResponderImpl()
+    face_test = []
+    print(responder.respond(face_test, "Piek"))
+    utterance_test = []
+    print(responder.respond(face_test, "Piek"))
