@@ -2,7 +2,7 @@ import random
 from typing import Iterable, List
 
 from cltl.emotion_extraction.api import Emotion
-from cltl.emotion_extraction.emotion_mappings import EkmanEmotion, GoEmotion, Sentiment
+from cltl.emotion_extraction.emotion_mappings import EkmanEmotion, GoEmotion, Sentiment, FaceEmotion
 
 """
 Sets of Emotion Response Phrases to add variety (using the random.choice function)
@@ -60,7 +60,40 @@ _GO_RESPONSES = {
 }
 
 
-_RESPONSES = _GO_RESPONSES | _EKMAN_RESPONSES | _SENTIMENT_RESPONSES
+_FACE_RESPONSES = {
+    FaceEmotion.AFFECTION: ["Is this love that I see?", "I can tell you really feel affection."],
+    FaceEmotion.ANGER: ["You are feeling anger, don't you?", "Why are you so angry?", "what makes you angry?"],
+    FaceEmotion.ANNOYANCE: ["I am sorry if I annoyed you",
+                            "I am sorry, I am really sorry. I just wanted to serve you."],
+    FaceEmotion.ANTICIPATION: ["I can tell you are ready and want to try."],
+    FaceEmotion.AVERSION: ["You really dont want this do you?"],
+    FaceEmotion.CONFIDENCE: ["You show a lot of confidence", "I can see you are sure about yourself"],
+    FaceEmotion.DISAPPROVAL: ["Ok I got it, you clearly disapprove.", "So you do not agree?"],
+    FaceEmotion.DISCONNECTION: ["I can tell that you are bored.", "Fine, it is clear you want something else."],
+    FaceEmotion.DISQUIETMENT: ["I guess you are getting restless."],
+    FaceEmotion.DOUBT_CONFUSION: ["Are you sure?", "Do you have doubts?", "Are you confused?",
+                                  "I think you got confused. I am sorry for that"],
+    FaceEmotion.EMBARRASSMENT: ["You feel embarrassment?"],
+    FaceEmotion.ENGAGEMENT: ["Hahaha, let's have a party", "I think you are having fun!"],
+    FaceEmotion.ESTEEM: ["That makes your proud!", "You feel really good about yourself!"],
+    FaceEmotion.EXCITEMENT: ["I can see that you are really excited, are you?"],
+    FaceEmotion.FATIGUE: ["You look tired!", "You are exhausted!", "Are you tired?"],
+    FaceEmotion.FEAR: ["What scares you?", "You do not need to be scared when I am with you. I can help!"],
+    FaceEmotion.HAPPINESS: ["It is so good to see you happy! It makes me happy too.",
+                            "It feels so good to see you happy."],
+    FaceEmotion.PAIN: ["Auch! You are hurt!", "I can tell you are in pain."],
+    FaceEmotion.PEACE: ["You seem so happy and calm"],
+    FaceEmotion.PLEASURE: ["You are having fun don't you?"],
+    FaceEmotion.SADNESS: ["You feel sadness?", "I am sorry you feel sad."],
+    FaceEmotion.SENSITIVITY: ["I can tell you are really sensitive"],
+    FaceEmotion.SUFFERING: ["I can tell you are really in pain!", "I feel very sorry for you."],
+    FaceEmotion.SURPRISE: ["What the heck!", "That surprises you, not?"],
+    FaceEmotion.SYMPATHY: ["Thanks for being so considered", "You feel the same don't you?"],
+    FaceEmotion.YEARNING: ["You really have a desire for this", "I know you want this!"]
+}
+
+
+_RESPONSES = _GO_RESPONSES | _EKMAN_RESPONSES | _SENTIMENT_RESPONSES | _FACE_RESPONSES
 
 
 def respond_to_emotion(emotion: Emotion) -> str:

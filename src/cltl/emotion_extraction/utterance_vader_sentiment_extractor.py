@@ -33,9 +33,6 @@ class VaderSentimentDetector(EmotionExtractor):
     def extract_audio_emotions(self, audio: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    def extract_face_emotions(self, image: Any) -> List[Emotion]:
-        raise NotImplementedError()
-
 
 if __name__ == "__main__":
     utterance = "I love cats."

@@ -73,7 +73,9 @@ class FaceEmotionExtractionService:
             logger.debug("Skipped event outside intention %s, active: %s (%s)",
                          self._intentions, self._active_intentions, event)
             return
-#@TODO Fix how to get the image file path and the bbox for the human face
+        #@TODO Fix how to get the image file path and the bbox for the human face
+        # We need to read the bbox from the human face annotation and get the original image file
+        # Below is a dummy implementation as a place holder that does not work.
         image = event.payload.signal.image
         bbox = [0,0,0,0]
         emotions = self._extractor.extract_face_emotions(image, bbox)

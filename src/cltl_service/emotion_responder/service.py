@@ -37,9 +37,7 @@ class EmotionResponderService:
         self._intention_topic = intention_topic if intention_topic else None
         self._intentions = set(intentions) if intentions else {}
         self._active_intentions = {}
-
         self._topic_worker = None
-
         self._speaker = None
 
     @property

@@ -1,10 +1,8 @@
 import cv2
-import numpy as np 
-import os
 import torch 
 from torchvision import transforms
 
-#https://github.com/Tandon-A/emotic
+#Based on https://github.com/Tandon-A/emotic
 
 def process_images(context_norm, body_norm, image_context_path=None, image_context=None, image_body=None, bbox=None):
   ''' Prepare context and body image. 
@@ -69,10 +67,6 @@ def infer(context_norm, body_norm, ind2cat, ind2vad, device, thresholds, models,
     bool_cat_pred = torch.gt(pred_cat, thresholds)
 
   predictions = []
-  # for emotion in pred_cat:
-  #   write_line.append(emotion)
-  # for continuous in pred_cont:
-  #   write_line.append(str('%.4f' % (continuous)))
   for i in range(len(bool_cat_pred)):
     if bool_cat_pred[i] == True:
       result = {"label" : ind2cat[i], "score": float(pred_cat[i])}

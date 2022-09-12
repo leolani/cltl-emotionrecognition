@@ -56,6 +56,3 @@ class EmotionExtractor(abc.ABC):
     def extract_audio_emotions(self, audio: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    # @TODO
-    def extract_face_emotions(self, image: Any) -> List[Emotion]:
-        raise NotImplementedError()

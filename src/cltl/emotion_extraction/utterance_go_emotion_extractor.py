@@ -26,9 +26,6 @@ class GoEmotionDetector(EmotionExtractor):
     def extract_audio_emotions(self, audio_signal: Any) -> List[Emotion]:
         raise NotImplementedError()
 
-    def extract_face_emotions(self, image_signal: Any) -> List[Emotion]:
-        raise NotImplementedError()
-
     def extract_text_emotions(self, utterance: str) -> List[Emotion]:
         if not utterance:
             return []
