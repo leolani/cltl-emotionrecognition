@@ -10,6 +10,9 @@ from cltl.emotion_extraction.api import EmotionType, Emotion
 import cltl.emotion_extraction.emotion_mappings as mappings
 from emotic import Emotic
 
+import importlib.resources as pkg_resources
+import face_models
+
 ''' This file is based on the emotion detection from faces in contexts system "emotic". 
 Emotic is a database with 23,571 images with 34,320 annotated people in divers contexts: 
 places, social environments, different activities.
@@ -28,12 +31,6 @@ The ContextFaceEmotionExtractor class allows for the integration into the event-
 
 logger = logging.getLogger(__name__)
 
-_MODEL_FOLDER = "face_models"
-#@TODO the "model_emotic1.pth" within face models can only be loaded using the absolute path,
-# whereas the other models can be loaded through their relative path below "face_models".
-# The nodel path could be set though the init function
-
-_MODEL_FOLDER = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/src/cltl/face_emotion_extraction/face_models'
 
 _THRESHOLD = 0.5 #Threshold that selects emotions with score above
 
@@ -56,19 +53,21 @@ _VAD =  ['Valence', 'Arousal', 'Dominance']
 
 
 class ContextFaceEmotionExtractor(FaceEmotionExtractor):
-
-    def __init__(self, model_folder: str):
-        if model_folder:
-            _MODEL_FOLDER = model_folder
+    def __init__(self):
         self._device = torch.device("cuda:%s" %(str("")) if torch.cuda.is_available() else "cpu")
-        self._model_context = torch.load(os.path.join(_MODEL_FOLDER, 'model_context1.pth')).to(self._device)
-        self._model_body = torch.load(os.path.join(_MODEL_FOLDER, 'model_body1.pth')).to(self._device)
-        self._emotic_model = torch.load(os.path.join(_MODEL_FOLDER, 'model_emotic1.pth')).to(self._device)
+
+        with pkg_resources.open_binary(face_models, 'model_context1.pth') as context_model:
+            self._model_context = torch.load(context_model).to(self._device)
+        with pkg_resources.open_binary(face_models, 'model_body1.pth') as body_model:
+            self._model_body = torch.load(body_model).to(self._device)
+        with pkg_resources.open_binary(face_models, 'model_emotic1.pth') as emotic_model:
+            self._emotic_model = torch.load(emotic_model).to(self._device)
         self._model_context.eval()
         self._model_body.eval()
         self._emotic_model.eval()
         self._models = [self._model_context, self._model_body, self._emotic_model]
-        self._thresholds =  torch.FloatTensor(np.load(os.path.join(_MODEL_FOLDER, 'val_thresholds.npy'))).to(self._device)
+        with pkg_resources.open_binary(face_models, 'val_thresholds.npy') as val_thresholds:
+            self._thresholds =  torch.FloatTensor(np.load(val_thresholds)).to(self._device)
 
         self._cat2ind = {}
         self._ind2cat = {}
@@ -122,14 +121,13 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 if __name__ == '__main__':
     image_folder = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/data'
 
-    MODEL_FOLDER = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/src/cltl/face_emotion_extraction/face_models'
+    import importlib.resources as pkg_resources
+    import face_models
 
-    analyzer = ContextFaceEmotionExtractor(MODEL_FOLDER)
+    analyzer = ContextFaceEmotionExtractor()
 
     image_files = glob.glob(image_folder+'/*.png')
     for image_file in image_files:
         bbox =[0, 0, 640, 480]
         predictions = analyzer.extract_face_emotions(image_file, bbox)
         print(image_file, predictions)
-
-
