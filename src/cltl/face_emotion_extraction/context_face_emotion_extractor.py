@@ -1,17 +1,16 @@
 import glob
+import importlib.resources as pkg_resources
 import logging
 import time
-import os
+
 import numpy as np
 import torch
-from inference import infer
-from cltl.face_emotion_extraction.api import FaceEmotionExtractor
-from cltl.emotion_extraction.api import EmotionType, Emotion
-import cltl.emotion_extraction.emotion_mappings as mappings
-from emotic import Emotic
 
-import importlib.resources as pkg_resources
-import face_models
+import cltl.emotion_extraction.emotion_mappings as mappings
+import cltl.face_emotion_extraction.face_models as face_models
+from cltl.emotion_extraction.api import EmotionType, Emotion
+from cltl.face_emotion_extraction.api import FaceEmotionExtractor
+from inference import infer
 
 ''' This file is based on the emotion detection from faces in contexts system "emotic". 
 Emotic is a database with 23,571 images with 34,320 annotated people in divers contexts: 
@@ -120,9 +119,6 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 
 if __name__ == '__main__':
     image_folder = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/data'
-
-    import importlib.resources as pkg_resources
-    import face_models
 
     analyzer = ContextFaceEmotionExtractor()
 
