@@ -9,7 +9,7 @@ with open("VERSION", "r") as fh:
 
 
 setup(
-    name='cltl.mention-detection',
+    name='cltl.emotion-detection',
     version=version,
     package_dir={'': 'src'},
     packages=find_namespace_packages(include=['cltl.*', 'cltl_service.*'], where='src'),
