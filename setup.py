@@ -31,6 +31,16 @@ setup(
         "go": [
             "transformers",
         ],
+        "erc": [
+            "jsonpickle",
+            "requests",
+            "cltl.combot"
+        ],
+        "face": [
+            "torch",
+            "torchvision",
+            "opencv-python"
+        ],
         "service": [
             "emissor",
             "flask"
