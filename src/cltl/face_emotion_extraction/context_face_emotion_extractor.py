@@ -1,18 +1,18 @@
-import glob
-import importlib.resources as pkg_resources
 import logging
 import time
+from typing import Tuple, List
 
+import cv2
 import numpy as np
 import torch
+from torchvision import transforms
 
 import cltl.emotion_extraction.emotion_mappings as mappings
-import cltl.face_emotion_extraction.face_models as face_models
+import cltl.face_emotion_extraction.emotic_pickle as emotic_pickle
 from cltl.emotion_extraction.api import EmotionType, Emotion
 from cltl.face_emotion_extraction.api import FaceEmotionExtractor
-from inference import infer
 
-''' This file is based on the emotion detection from faces in contexts system "emotic". 
+""" This file is based on the emotion detection from faces in contexts system "emotic".
 Emotic is a database with 23,571 images with 34,320 annotated people in divers contexts: 
 places, social environments, different activities.
 
@@ -23,10 +23,8 @@ IEEE Transactions on patterns analysis and machine intelligence.
 - https://github.com/rkosti/emotic
 - https://github.com/Tandon-A/emotic
 
-The models depend on the "inference.py" (adapted from the original source) and "emotic.py" (needed to represent the model output).
+"""
 
-The ContextFaceEmotionExtractor class allows for the integration into the event-bus as a cltl_service.
-'''
 
 logger = logging.getLogger(__name__)
 
@@ -44,29 +42,23 @@ _CONTEXT_NORM= [_context_mean, _context_std]
 _BODY_NORM = [_body_mean, _body_std]
 
 # 26 Emotions labels used in emotic
-_EMOTIONS = ['Affection', 'Anger', 'Annoyance', 'Anticipation', 'Aversion', 'Confidence', 'Disapproval', 'Disconnection',
-       'Disquietment', 'Doubt/Confusion', 'Embarrassment', 'Engagement', 'Esteem', 'Excitement', 'Fatigue', 'Fear',
-       'Happiness', 'Pain', 'Peace', 'Pleasure', 'Sadness', 'Sensitivity', 'Suffering', 'Surprise', 'Sympathy',
-       'Yearning']
-_VAD =  ['Valence', 'Arousal', 'Dominance']
+_EMOTIONS = [emotion.name.lower() for emotion in mappings.FaceEmotion]
+_VAD =  [emotion.name.lower() for emotion in mappings.VADEmotion]
 
 
 class ContextFaceEmotionExtractor(FaceEmotionExtractor):
-    def __init__(self):
+    def __init__(self, model_context, model_body, model_emotic, value_thresholds):
         self._device = torch.device("cuda:%s" %(str("")) if torch.cuda.is_available() else "cpu")
 
-        with pkg_resources.open_binary(face_models, 'model_context1.pth') as context_model:
-            self._model_context = torch.load(context_model).to(self._device)
-        with pkg_resources.open_binary(face_models, 'model_body1.pth') as body_model:
-            self._model_body = torch.load(body_model).to(self._device)
-        with pkg_resources.open_binary(face_models, 'model_emotic1.pth') as emotic_model:
-            self._emotic_model = torch.load(emotic_model).to(self._device)
+        self._model_context = torch.load(model_context, pickle_module=emotic_pickle).to(self._device)
+        self._model_body = torch.load(model_body, pickle_module=emotic_pickle).to(self._device)
+        self._model_emotic = torch.load(model_emotic, pickle_module=emotic_pickle).to(self._device)
+
         self._model_context.eval()
         self._model_body.eval()
-        self._emotic_model.eval()
-        self._models = [self._model_context, self._model_body, self._emotic_model]
-        with pkg_resources.open_binary(face_models, 'val_thresholds.npy') as val_thresholds:
-            self._thresholds =  torch.FloatTensor(np.load(val_thresholds)).to(self._device)
+        self._model_emotic.eval()
+
+        self._thresholds =  torch.FloatTensor(np.load(value_thresholds)).to(self._device)
 
         self._cat2ind = {}
         self._ind2cat = {}
@@ -78,23 +70,12 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
         for idx, continuous in enumerate(_VAD):
             self._ind2vad[idx] = continuous
 
-    # This function takes the path to the image file and the bounding box for the human face as input
-    # It returns a JSON string with the predictions. Predictions have a label, score and the three valence values.
-    # The emotic predictions are also mapped to Ekman emotions and sentiment using the emotion mappings.
-    def extract_face_emotions(self, image_file: str, bbox:[]) ->str:
-        logger.debug(f"sending utterance to server...")
+    def extract_face_emotions(self, image: np.ndarray, bbox: Tuple[int, int, int, int] = None) -> List[Emotion]:
         start = time.time()
-        emotions = []
 
-        response = infer(_CONTEXT_NORM,
-                            _BODY_NORM,
-                            self._ind2cat,
-                            self._ind2vad,
-                            self._device,
-                            self._thresholds,
-                            self._models,
-                            image_context_path=image_file,
-                            bbox=bbox)
+        response = self._infer(image, bbox)
+
+        emotions = []
         emotion_labels = mappings.sort_predictions(response)
         emotions.extend(self._filter_by_threshold(EmotionType.FACE, emotion_labels))
         ekman_labels = mappings.get_total_mapped_scores(mappings.face_ekman_map, emotion_labels)
@@ -107,8 +88,50 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 
         return emotions
 
+    def _infer(self, image, bbox):
+        image_context, image_body = self._preprocess_image(image, bbox)
+
+        with torch.no_grad():
+            image_context = image_context.to(self._device)
+            image_body = image_body.to(self._device)
+
+            pred_context = self._model_context(image_context)
+            pred_body = self._model_body(image_body)
+            pred_cat, pred_cont = self._model_emotic(pred_context, pred_body)
+            pred_cat = pred_cat.squeeze(0)
+            pred_cont = pred_cont.squeeze(0).to("cpu").data.numpy()
+            bool_cat_pred = torch.gt(pred_cat, self._thresholds)
+
+        predictions = []
+        for i in range(len(bool_cat_pred)):
+            if bool_cat_pred[i]:
+                result = {"label": self._ind2cat[i], "score": float(pred_cat[i])}
+                for i in range(len(pred_cont)):
+                    result.update({self._ind2vad[i]: 10 * pred_cont[i]})
+                predictions.append(result)
+
+        return predictions
+
+    def _preprocess_image(self, image, bbox):
+        if bbox is not None:
+            image_body = image[bbox[1]:bbox[3], bbox[0]:bbox[2]].copy()
+        else:
+            image_body = image
+
+        image_context = cv2.resize(image, (224, 224))
+        image_body = cv2.resize(image_body, (128, 128))
+
+        test_transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor()])
+        context_norm = transforms.Normalize(_CONTEXT_NORM[0], _CONTEXT_NORM[1])
+        body_norm = transforms.Normalize(_BODY_NORM[0], _BODY_NORM[1])
+
+        image_context = context_norm(test_transform(image_context)).unsqueeze(0)
+        image_body = body_norm(test_transform(image_body)).unsqueeze(0)
+
+        return image_context, image_body
+
     def _filter_by_threshold(self, emotion_type, results):
-        return [Emotion(type=EmotionType.FACE, value=result['label'], confidence=result['score'])
+        return [Emotion(type=emotion_type, value=result['label'], confidence=result['score'])
                 for result in results
                 if result['score'] > 0 and result['score'] / results[0]['score'] > _THRESHOLD]
 
@@ -116,14 +139,3 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
         logger.info("got %s from server in %s sec", response, time.time() - start)
         logger.info("All emotions detected: %s", [emotion.value for emotion in emotions
                                                     if emotion.type == EmotionType.FACE])
-
-if __name__ == '__main__':
-    image_folder = '/Users/piek/Desktop/d-Leolani/cltl-emotionrecognition/data'
-
-    analyzer = ContextFaceEmotionExtractor()
-
-    image_files = glob.glob(image_folder+'/*.png')
-    for image_file in image_files:
-        bbox =[0, 0, 640, 480]
-        predictions = analyzer.extract_face_emotions(image_file, bbox)
-        print(image_file, predictions)

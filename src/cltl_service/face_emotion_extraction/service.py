@@ -17,7 +17,7 @@ class FaceEmotionExtractionService:
     @classmethod
     def from_config(cls, extractor: FaceEmotionExtractor, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
-        config = config_manager.get_config("cltl.text_emotion_extraction")
+        config = config_manager.get_config("cltl.face_emotion_recognition.events")
 
         return cls(config.get("topic_input"), config.get("topic_output"), config.get("topic_scenario"),
                    config.get("topic_intention"), config.get("intentions", multi=True),
