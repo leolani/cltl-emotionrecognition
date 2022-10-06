@@ -1,6 +1,8 @@
+import collections
 import logging
 import time
 from typing import Tuple, List
+from itertools import compress
 
 import cv2
 import numpy as np
@@ -31,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 _THRESHOLD = 0.5 #Threshold that selects emotions with score above
 
+
 # Norms used by emotic to measure arousal, dominance nad valence
 # Setting low values leads to few emotions
 # This could be removed after testing
@@ -58,7 +61,7 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
         self._model_body.eval()
         self._model_emotic.eval()
 
-        self._thresholds =  torch.FloatTensor(np.load(value_thresholds)).to(self._device)
+        self._thresholds =  np.load(value_thresholds)
 
         self._cat2ind = {}
         self._ind2cat = {}
@@ -73,18 +76,17 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
     def extract_face_emotions(self, image: np.ndarray, bbox: Tuple[int, int, int, int] = None) -> List[Emotion]:
         start = time.time()
 
-        response = self._infer(image, bbox)
+        inferred = self._infer(image, bbox)
 
         emotions = []
-        emotion_labels = mappings.sort_predictions(response)
+        emotion_labels = mappings.sort_predictions(inferred)
         emotions.extend(self._filter_by_threshold(EmotionType.FACE, emotion_labels))
         ekman_labels = mappings.get_total_mapped_scores(mappings.face_ekman_map, emotion_labels)
         emotions.extend(self._filter_by_threshold(EmotionType.EKMAN, ekman_labels))
-
         sentiment_labels = mappings.get_total_mapped_scores(mappings.face_sentiment_map, emotion_labels)
         emotions.extend(self._filter_by_threshold(EmotionType.SENTIMENT, sentiment_labels))
 
-        self._log_results(emotions, response, start)
+        self._log_results(emotions, inferred, start)
 
         return emotions
 
@@ -97,20 +99,16 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 
             pred_context = self._model_context(image_context)
             pred_body = self._model_body(image_body)
-            pred_cat, pred_cont = self._model_emotic(pred_context, pred_body)
-            pred_cat = pred_cat.squeeze(0)
-            pred_cont = pred_cont.squeeze(0).to("cpu").data.numpy()
-            bool_cat_pred = torch.gt(pred_cat, self._thresholds)
+            pred_emotic, pred_vad = self._model_emotic(pred_context, pred_body)
 
-        predictions = []
-        for i in range(len(bool_cat_pred)):
-            if bool_cat_pred[i]:
-                result = {"label": self._ind2cat[i], "score": float(pred_cat[i])}
-                for i in range(len(pred_cont)):
-                    result.update({self._ind2vad[i]: 10 * pred_cont[i]})
-                predictions.append(result)
+            pred_emotic = pred_emotic.squeeze(0).to("cpu").data.numpy()
+            # TODO include values from continuous VAD emotion model
+            pred_vad = pred_vad.squeeze(0).to("cpu").data.numpy()
 
-        return predictions
+        emotic_scores = zip(_EMOTIONS, pred_emotic)
+        detected = compress(emotic_scores, selectors=(pred_emotic > self._thresholds))
+
+        return [{'label': label, 'score': score} for label, score in detected]
 
     def _preprocess_image(self, image, bbox):
         if bbox is not None:
@@ -130,10 +128,10 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 
         return image_context, image_body
 
-    def _filter_by_threshold(self, emotion_type, results):
-        return [Emotion(type=emotion_type, value=result['label'], confidence=result['score'])
-                for result in results
-                if result['score'] > 0 and result['score'] / results[0]['score'] > _THRESHOLD]
+    def _filter_by_threshold(self, emotion_type, predictions):
+        return [Emotion(type=emotion_type, value=prediction['label'], confidence=prediction['score'])
+                for prediction in predictions
+                if prediction['score'] > 0 and prediction['score'] / predictions[0]['score'] > _THRESHOLD]
 
     def _log_results(self, emotions, response, start):
         logger.info("got %s from server in %s sec", response, time.time() - start)
