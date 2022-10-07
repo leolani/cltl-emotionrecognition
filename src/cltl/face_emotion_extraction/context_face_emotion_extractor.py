@@ -74,6 +74,12 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
             self._ind2vad[idx] = continuous
 
     def extract_face_emotions(self, image: np.ndarray, bbox: Tuple[int, int, int, int] = None) -> List[Emotion]:
+        if bbox:
+            bbox = [max(0, x) for x in bbox]
+
+        if bbox and bbox == (0,0,0,0):
+            return []
+
         start = time.time()
 
         inferred = self._infer(image, bbox)
@@ -116,6 +122,11 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
         else:
             image_body = image
 
+        # Debug images
+        # import PIL
+        # img = PIL.Image.fromarray(image_body, 'RGB')
+        # img.show()
+
         image_context = cv2.resize(image, (224, 224))
         image_body = cv2.resize(image_body, (128, 128))
 
@@ -129,7 +140,7 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
         return image_context, image_body
 
     def _filter_by_threshold(self, emotion_type, predictions):
-        return [Emotion(type=emotion_type, value=prediction['label'], confidence=prediction['score'])
+        return [Emotion(type=emotion_type, value=prediction['label'], confidence=float(prediction['score']))
                 for prediction in predictions
                 if prediction['score'] > 0 and prediction['score'] / predictions[0]['score'] > _THRESHOLD]
 
