@@ -25,20 +25,20 @@ class TestFaceContextEmotions(unittest.TestCase):
             self._emotion_extractor = ContextFaceEmotionExtractor(mc, mb, me, vt)
 
     @parameterized.expand([
-        ('anger.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('cheer.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('hope.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('joy.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('neutral.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('scared.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('shocked.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('smile.png', FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('anger.png', (210, 180, 360, 410), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('cheer.png', (200, 170, 335, 385), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('hope.png', (195, 160, 330, 360), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('joy.png', (200, 180, 330, 390), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('neutral.png', (195, 145, 325, 340), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('scared.png', (240, 180, 370, 380), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('shocked.png', (235, 175, 380, 370), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('smile.png', (205, 180, 350, 380), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
     ])
-    def test_analyze_face_emotion(self, image_file, face_emotion, ekman_emotion, sentiment):
+    def test_analyze_face_emotion(self, image_file, bbox, face_emotion, ekman_emotion, sentiment):
         with pkg_resources.open_binary(test_faces, image_file) as image_png:
             image = np.array(Image.open(image_png))
 
-        emotions = self._emotion_extractor.extract_face_emotions(image)
+        emotions = self._emotion_extractor.extract_face_emotions(image, bbox)
 
         self.assertEqual(3, len(emotions))
 
