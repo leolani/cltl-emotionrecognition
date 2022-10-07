@@ -1,11 +1,12 @@
 import logging
-from typing import List, Callable
+from typing import List, Callable, Tuple
 
 from cltl_service.face_recognition.schema import FaceRecognitionEvent
 from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
+from cltl.backend.api.camera import Image
 from cltl.backend.spi.image import ImageSource
 from cltl.backend.source.client_source import ClientImageSource
 
@@ -74,14 +75,18 @@ class FaceEmotionExtractionService:
             logger.info("Skip image with %s faces in emotion recognition", len(face_mentions))
             return
 
-        image_id = face_mentions[0].segment[0].container_id
-        image_location = "cltl-storage:image/" + image_id
-
-        with self._image_loader(image_location) as source:
-            image = source.capture()
-
-        bbox = face_mentions[0].segment[0].bounds
+        image, bbox = self._get_image(face_mentions[0])
         emotions = self._extractor.extract_face_emotions(image.image, bbox)
 
         emotion_event = EmotionRecognitionEvent.create_text_mentions(face_mentions[0], emotions)
         self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
+
+    def _get_image(self, face_mention) -> Tuple[Image, Tuple[int, int, int, int]]:
+        image_id = face_mention.segment[0].container_id
+        image_location = "cltl-storage:image/" + image_id
+        with self._image_loader(image_location) as source:
+            image = source.capture()
+
+        bbox = face_mention.segment[0].bounds
+
+        return image, bbox
