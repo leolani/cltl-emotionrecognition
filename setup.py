@@ -45,6 +45,7 @@ setup(
             "emissor",
             "flask",
             "cltl.backend",
-            "cltl.combot"
+            "cltl.combot",
+            "cltl.face-recognition",
         ]}
 )
