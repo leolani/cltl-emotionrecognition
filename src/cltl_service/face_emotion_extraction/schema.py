@@ -21,8 +21,8 @@ class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
         image with Face Annotation with value None.
         """
         segment = face_mention.segment
-        annotations = [Annotation(Emotion.__class__.__name__, emotion, __name__, timestamp_now())
+        annotations = [Annotation(Emotion.__name__, emotion, __name__, timestamp_now())
                        for emotion in emotions]
 
-        return Mention(str(uuid.uuid4()), [segment], annotations)
+        return Mention(str(uuid.uuid4()), segment, annotations)
 
