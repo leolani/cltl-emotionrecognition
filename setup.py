@@ -22,7 +22,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires='>=3.8',
-    install_requires=['cltl.combot'],
+    install_requires=[],
     extras_require={
         "nltk": [
             "numpy",
@@ -43,6 +43,8 @@ setup(
         ],
         "service": [
             "emissor",
-            "flask"
+            "flask",
+            "cltl.backend",
+            "cltl.combot"
         ]}
 )
