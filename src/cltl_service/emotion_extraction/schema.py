@@ -1,9 +1,10 @@
 import uuid
+from dataclasses import dataclass
+from typing import Iterable
+
 from cltl.combot.event.emissor import AnnotationEvent
 from cltl.combot.infra.time_util import timestamp_now
-from dataclasses import dataclass
-from emissor.representation.scenario import Mention, TextSignal, Annotation, class_type, module_source
-from typing import Iterable
+from emissor.representation.scenario import Mention, TextSignal, Annotation, class_type
 
 from cltl.emotion_extraction.api import Emotion
 
