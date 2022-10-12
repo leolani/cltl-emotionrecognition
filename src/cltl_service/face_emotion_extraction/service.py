@@ -1,14 +1,15 @@
 import logging
 from typing import List, Callable, Tuple
 
-from cltl_service.face_recognition.schema import FaceRecognitionEvent
+from cltl.backend.api.camera import Image
+from cltl.backend.source.client_source import ClientImageSource
+from cltl.backend.spi.image import ImageSource
 from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
-from cltl.backend.api.camera import Image
-from cltl.backend.spi.image import ImageSource
-from cltl.backend.source.client_source import ClientImageSource
+from cltl_service.face_recognition.schema import FaceRecognitionEvent
+from emissor.representation.scenario import class_source
 
 from cltl.face_emotion_extraction.api import FaceEmotionExtractor
 from cltl_service.face_emotion_extraction.schema import EmotionRecognitionEvent
@@ -77,8 +78,9 @@ class FaceEmotionExtractionService:
 
         image, bbox = self._get_image(face_mentions[0])
         emotions = self._extractor.extract_face_emotions(image.image, bbox)
+        source = class_source(self._extractor)
+        emotion_event = EmotionRecognitionEvent.create_text_mentions(face_mentions[0], emotions, source)
 
-        emotion_event = EmotionRecognitionEvent.create_text_mentions(face_mentions[0], emotions)
         self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
 
     def _get_image(self, face_mention) -> Tuple[Image, Tuple[int, int, int, int]]:

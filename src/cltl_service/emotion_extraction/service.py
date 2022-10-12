@@ -6,6 +6,7 @@ from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
+from emissor.representation.scenario import class_source
 
 from cltl.emotion_extraction.api import EmotionExtractor
 from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
@@ -63,6 +64,7 @@ class EmotionExtractionService:
     def _process(self, event: Event[TextSignalEvent]):
         utterance= event.payload.signal.text
         emotions = self._extractor.extract_text_emotions(utterance)
+        source = class_source(self._extractor)
+        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotions, source)
 
-        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotions)
         self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))
