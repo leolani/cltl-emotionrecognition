@@ -1,10 +1,11 @@
 import uuid
+from dataclasses import dataclass
+from typing import Iterable
+
 from cltl.combot.event.emissor import AnnotationEvent
 from cltl.combot.infra.time_util import timestamp_now
-from emissor.representation.scenario import module_source, class_type
-from dataclasses import dataclass
-from emissor.representation.scenario import Mention, TextSignal, Annotation
-from typing import Iterable
+from emissor.representation.scenario import Mention, Annotation
+from emissor.representation.scenario import class_type
 
 from cltl.emotion_extraction.api import Emotion
 
@@ -13,7 +14,7 @@ from cltl.emotion_extraction.api import Emotion
 class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
     @classmethod
     def create_text_mentions(cls, face_mention: Mention, emotions: Iterable[Emotion], source: str):
-        return cls(class_type(cls), EmotionRecognitionEvent.to_mention(face_mention, emotions, source))
+        return cls(class_type(cls), [EmotionRecognitionEvent.to_mention(face_mention, emotions, source)])
 
     @staticmethod
     def to_mention(face_mention: Mention, emotions: Iterable[Emotion], source: str) -> Mention:

@@ -13,7 +13,7 @@ from cltl.emotion_extraction.api import Emotion
 class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
     @classmethod
     def create_text_mentions(cls, text_signal: TextSignal, emotions: Iterable[Emotion], source: str):
-        return cls(class_type(cls), EmotionRecognitionEvent.to_mention(text_signal, emotions, source))
+        return cls(class_type(cls), [EmotionRecognitionEvent.to_mention(text_signal, emotions, source)])
 
     @staticmethod
     def to_mention(text_signal: TextSignal, emotions: Iterable[Emotion], source: str) -> Mention:
@@ -26,4 +26,3 @@ class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
                        for emotion in emotions]
 
         return Mention(str(uuid.uuid4()), [segment], annotations)
-
