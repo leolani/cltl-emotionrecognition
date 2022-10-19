@@ -45,7 +45,7 @@ _CONTEXT_NORM= [_context_mean, _context_std]
 _BODY_NORM = [_body_mean, _body_std]
 
 # 26 Emotions labels used in emotic
-_EMOTIONS = [emotion.name.lower() for emotion in mappings.FaceEmotion]
+_EMOTIONS = [emotion.name.lower() for emotion in mappings.EmoticEmotion]
 _VAD =  [emotion.name.lower() for emotion in mappings.VADEmotion]
 
 
@@ -86,7 +86,7 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
 
         emotions = []
         emotion_labels = mappings.sort_predictions(inferred)
-        emotions.extend(self._filter_by_threshold(EmotionType.FACE, emotion_labels))
+        emotions.extend(self._filter_by_threshold(EmotionType.EMOTIC, emotion_labels))
         ekman_labels = mappings.get_total_mapped_scores(mappings.face_ekman_map, emotion_labels)
         emotions.extend(self._filter_by_threshold(EmotionType.EKMAN, ekman_labels))
         sentiment_labels = mappings.get_total_mapped_scores(mappings.face_sentiment_map, emotion_labels)
@@ -147,4 +147,4 @@ class ContextFaceEmotionExtractor(FaceEmotionExtractor):
     def _log_results(self, emotions, response, start):
         logger.info("got %s from server in %s sec", response, time.time() - start)
         logger.info("All emotions detected: %s", [emotion.value for emotion in emotions
-                                                    if emotion.type == EmotionType.FACE])
+                                                    if emotion.type == EmotionType.EMOTIC])

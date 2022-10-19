@@ -4,7 +4,7 @@ from enum import Enum, auto
 class EmotionType(Enum):
     GO = auto()
     EKMAN = auto()
-    FACE = auto()
+    EMOTIC = auto()
     SENTIMENT = auto()
 
 
@@ -54,7 +54,8 @@ class GoEmotion(Enum):
     CONFUSION = auto()
     NEUTRAL = auto()
 
-class FaceEmotion(Enum):
+
+class EmoticEmotion(Enum):
     """ 26 Emotions use in
     Kosti R., J.M. Alvarex, A. Recasens, and A. Paedriza, (2019), "Context based emotion recognition using emotic dataset",
     IEEE Transactions on patterns analysis and machine intelligence.
@@ -88,6 +89,7 @@ class FaceEmotion(Enum):
     SURPRISE = 24
     SYMPATHY = 25
     YEARNING = 26
+
 
 class VADEmotion(Enum):
     """ VAD Emotions use in

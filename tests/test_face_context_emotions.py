@@ -8,7 +8,7 @@ from parameterized import parameterized
 import resources
 import tests.test_data.faces as test_faces
 
-from cltl.emotion_extraction.emotion_mappings import EmotionType, EkmanEmotion, Sentiment, FaceEmotion
+from cltl.emotion_extraction.emotion_mappings import EmotionType, EkmanEmotion, Sentiment, EmoticEmotion
 from cltl.face_emotion_extraction.context_face_emotion_extractor import ContextFaceEmotionExtractor
 
 
@@ -25,14 +25,14 @@ class TestFaceContextEmotions(unittest.TestCase):
             self._emotion_extractor = ContextFaceEmotionExtractor(mc, mb, me, vt)
 
     @parameterized.expand([
-        ('anger.png', (210, 180, 360, 410), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('cheer.png', (200, 170, 335, 385), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('hope.png', (195, 160, 330, 360), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('joy.png', (200, 180, 330, 390), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('neutral.png', (195, 145, 325, 340), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('scared.png', (240, 180, 370, 380), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('shocked.png', (235, 175, 380, 370), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
-        ('smile.png', (205, 180, 350, 380), FaceEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('anger.png', (210, 180, 360, 410), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('cheer.png', (200, 170, 335, 385), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('hope.png', (195, 160, 330, 360), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('joy.png', (200, 180, 330, 390), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('neutral.png', (195, 145, 325, 340), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('scared.png', (240, 180, 370, 380), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('shocked.png', (235, 175, 380, 370), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
+        ('smile.png', (205, 180, 350, 380), EmoticEmotion.ENGAGEMENT, EkmanEmotion.SURPRISE, Sentiment.POSITIVE),
     ])
     def test_analyze_face_emotion(self, image_file, bbox, face_emotion, ekman_emotion, sentiment):
         with pkg_resources.open_binary(test_faces, image_file) as image_png:
@@ -42,7 +42,7 @@ class TestFaceContextEmotions(unittest.TestCase):
 
         self.assertEqual(3, len(emotions))
 
-        self.assertEqual(EmotionType.FACE, emotions[0].type)
+        self.assertEqual(EmotionType.EMOTIC, emotions[0].type)
         self.assertEqual(face_emotion.name.lower(), emotions[0].value)
         self.assertEqual(EmotionType.EKMAN, emotions[1].type)
         self.assertEqual(ekman_emotion.name.lower(), emotions[1].value)
