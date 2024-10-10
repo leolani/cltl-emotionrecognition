@@ -4,7 +4,7 @@ from enum import Enum, auto
 class EmotionType(Enum):
     GO = auto()
     EKMAN = auto()
-    FACE = auto()
+    EMOTIC = auto()
     SENTIMENT = auto()
 
 
@@ -54,33 +54,55 @@ class GoEmotion(Enum):
     CONFUSION = auto()
     NEUTRAL = auto()
 
-class FaceEmotion(Enum):
-    AFFECTION = auto()
-    ANGER = auto()
-    ANNOYANCE = auto()
-    ANTICIPATION = auto()
-    AVERSION = auto()
-    CONFIDENCE = auto()
-    DISAPPROVAL = auto()
-    DISCONNECTION = auto()
-    DISQUIETMENT = auto()
-    DOUBT_CONFUSION = 'Doubt/Confusion'
-    EMBARRASSMENT = auto()
-    ENGAGEMENT = auto()
-    ESTEEM = auto()
-    EXCITEMENT = auto()
-    FATIGUE = auto()
-    FEAR = auto()
-    HAPPINESS = auto()
-    PAIN = auto()
-    PEACE = auto()
-    PLEASURE = auto()
-    SADNESS = auto()
-    SENSITIVITY = auto()
-    SUFFERING = auto()
-    SURPRISE = auto()
-    SYMPATHY = auto()
-    YEARNING = auto()
+
+class EmoticEmotion(Enum):
+    """ 26 Emotions use in
+    Kosti R., J.M. Alvarex, A. Recasens, and A. Paedriza, (2019), "Context based emotion recognition using emotic dataset",
+    IEEE Transactions on patterns analysis and machine intelligence.
+
+    Ordered as used in the Emotic model.
+    """
+    # KEEP ORDER!
+    AFFECTION = 1
+    ANGER = 2
+    ANNOYANCE = 3
+    ANTICIPATION = 4
+    AVERSION = 5
+    CONFIDENCE = 6
+    DISAPPROVAL = 7
+    DISCONNECTION = 8
+    DISQUIETMENT = 9
+    DOUBT_CONFUSION = 10
+    EMBARRASSMENT = 11
+    ENGAGEMENT = 12
+    ESTEEM = 13
+    EXCITEMENT = 14
+    FATIGUE = 15
+    FEAR = 16
+    HAPPINESS = 17
+    PAIN = 18
+    PEACE = 19
+    PLEASURE = 20
+    SADNESS = 21
+    SENSITIVITY = 22
+    SUFFERING = 23
+    SURPRISE = 24
+    SYMPATHY = 25
+    YEARNING = 26
+
+
+class VADEmotion(Enum):
+    """ VAD Emotions use in
+        Kosti R., J.M. Alvarex, A. Recasens, and A. Paedriza, (2019), "Context based emotion recognition using emotic dataset",
+        IEEE Transactions on patterns analysis and machine intelligence.
+
+    Ordered as used in the Emotic model.
+    """
+    # KEEP ORDER!
+    VALENCE = 1
+    AROUSAL = 2
+    DOMINANCE = 3
+
 
 # Use a mapping to get a dictionary of the mapped GO_emotion scores
 def get_mapped_scores(emotion_map, go_emotion_scores):
@@ -137,19 +159,19 @@ go_ekman_map={
 }
 
 face_ekman_map={
-    "joy" : ['Affection', 'Confidence', 'Esteem', 'Excitement', 'Happiness',  'Peace', 'Pleasure',  'Sympathy'],
-    "anger": ['Anger', 'Annoyance', 'Embarrassment'],
-    "fear": ['Doubt/Confusion', 'Fear', 'Pain',  'Suffering', 'Yearning'],
-    "disgust": ['Aversion', 'Disapproval', 'Disconnection', 'Embarrassment'],
-    "sadness": ['Disconnection', 'Disquietment', 'Fatigue', 'Sadness'],
-    "surprise": ['Engagement', 'Excitement', 'Sensitivity', 'Surprise'],
-    "neutral": ['Anticipation', 'Peace']
+    "joy" : ['affection', 'confidence', 'esteem', 'excitement', 'happiness',  'peace', 'pleasure',  'sympathy'],
+    "anger": ['anger', 'annoyance', 'embarrassment'],
+    "fear": ['doubt_confusion', 'fear', 'pain',  'suffering', 'yearning'],
+    "disgust": ['aversion', 'disapproval', 'disconnection', 'embarrassment'],
+    "sadness": ['disconnection', 'disquietment', 'fatigue', 'sadness'],
+    "surprise": ['engagement', 'excitement', 'sensitivity', 'surprise'],
+    "neutral": ['anticipation', 'peace']
 }
 
 face_sentiment_map={
-    "positive" : ['Affection', 'Confidence', 'Esteem', 'Excitement', 'Happiness',  'Peace', 'Pleasure',  'Sympathy', 'Engagement', 'Excitement', 'Sensitivity', 'Surprise'],
-    "negative": ['Anger', 'Annoyance', 'Embarrassment', 'Doubt/Confusion', 'Fear', 'Pain',  'Suffering', 'Yearning', 'Aversion', 'Disapproval', 'Disconnection', 'Embarrassment', 'Disconnection', 'Disquietment', 'Fatigue', 'Sadness'],
-    "neutral": ['Anticipation', 'Peace']
+    "positive" : ['affection', 'confidence', 'esteem', 'excitement', 'happiness',  'peace', 'pleasure',  'sympathy', 'engagement', 'excitement', 'sensitivity', 'surprise'],
+    "negative": ['anger', 'annoyance', 'embarrassment', 'doubt_confusion', 'fear', 'pain',  'suffering', 'yearning', 'aversion', 'disapproval', 'disconnection', 'embarrassment', 'disconnection', 'disquietment', 'fatigue', 'sadness'],
+    "neutral": ['anticipation', 'peace']
 }
 
 # Sort a list of results in JSON format by the value of the score element

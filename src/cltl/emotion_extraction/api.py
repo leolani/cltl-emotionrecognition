@@ -2,7 +2,7 @@ import abc
 import dataclasses
 from typing import Optional, Any, List, Union
 
-from cltl.emotion_extraction.emotion_mappings import EmotionType, GoEmotion, EkmanEmotion, FaceEmotion, Sentiment
+from cltl.emotion_extraction.emotion_mappings import EmotionType, GoEmotion, EkmanEmotion, EmoticEmotion, Sentiment
 
 
 @dataclasses.dataclass
@@ -19,13 +19,13 @@ class Emotion:
     value: str
     confidence: Optional[float]
 
-    def to_enum(self) -> Union[GoEmotion, EkmanEmotion, FaceEmotion, Sentiment]:
+    def to_enum(self) -> Union[GoEmotion, EkmanEmotion, EmoticEmotion, Sentiment]:
         if self.type == EmotionType.GO:
             return GoEmotion[self.value.upper()]
         if self.type == EmotionType.EKMAN:
             return EkmanEmotion[self.value.upper()]
-        if self.type == EmotionType.FACE:
-            return FaceEmotion[self.value.upper()]
+        if self.type == EmotionType.EMOTIC:
+            return EmoticEmotion[self.value.upper()]
         if self.type == EmotionType.SENTIMENT:
             return Sentiment[self.value.upper()]
 

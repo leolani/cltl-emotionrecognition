@@ -9,7 +9,7 @@ with open("VERSION", "r") as fh:
 
 
 setup(
-    name='cltl.emotion-detection',
+    name='cltl.emotionrecognition',
     version=version,
     package_dir={'': 'src'},
     packages=find_namespace_packages(include=['cltl.*', 'cltl_service.*'], where='src'),
@@ -22,7 +22,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires='>=3.8',
-    install_requires=['cltl.combot'],
+    install_requires=[],
     extras_require={
         "nltk": [
             "numpy",
@@ -31,8 +31,21 @@ setup(
         "go": [
             "transformers",
         ],
+        "erc": [
+            "jsonpickle",
+            "requests",
+            "cltl.combot"
+        ],
+        "face": [
+            "torch",
+            "torchvision",
+            "opencv-python"
+        ],
         "service": [
             "emissor",
-            "flask"
+            "flask",
+            "cltl.backend",
+            "cltl.combot",
+            "cltl.face-recognition",
         ]}
 )

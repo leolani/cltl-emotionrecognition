@@ -1,29 +1,30 @@
 import uuid
-from cltl.combot.event.emissor import AnnotationEvent
-from cltl.combot.infra.time_util import timestamp_now
 from dataclasses import dataclass
-from emissor.representation.scenario import Mention, ImageSignal, Annotation
 from typing import Iterable
 
-from cltl.emotion_extraction.api import FaceEmotion
+from cltl.combot.event.emissor import AnnotationEvent
+from cltl.combot.infra.time_util import timestamp_now
+from emissor.representation.scenario import Mention, Annotation
+from emissor.representation.scenario import class_type
+
+from cltl.emotion_extraction.api import Emotion
 
 
 @dataclass
-class FaceEmotionRecognitionEvent(AnnotationEvent[Annotation[FaceEmotion]]):
+class EmotionRecognitionEvent(AnnotationEvent[Annotation[Emotion]]):
     @classmethod
-    def create_text_mentions(cls, image_signal: ImageSignal, emotions: Iterable[FaceEmotion]):
-        return cls(cls.__name__, EmotionRecognitionEvent.to_mention(image_signal, emotions))
+    def create_text_mentions(cls, face_mention: Mention, emotions: Iterable[Emotion], source: str):
+        return cls(class_type(cls), [EmotionRecognitionEvent.to_mention(face_mention, emotions, source)])
 
     @staticmethod
-    def to_mention(image_signal: ImageSignal, emotions: Iterable[FaceEmotion]):
+    def to_mention(face_mention: Mention, emotions: Iterable[Emotion], source: str) -> Mention:
         """
         Create Mention with face annotations. If no face is detected, annotate the whole
         image with Face Annotation with value None.
         """
-        #@TODO this needs to be fixed for face annotation
-        segment = image_signal.ruler
-        annotations = [Annotation(Emotion.__class__.__name__, emotion, __name__, timestamp_now())
+        segment = face_mention.segment
+        annotations = [Annotation(class_type(Emotion), emotion, source, timestamp_now())
                        for emotion in emotions]
 
-        return Mention(str(uuid.uuid4()), [segment], annotations)
+        return Mention(str(uuid.uuid4()), segment, annotations)
 

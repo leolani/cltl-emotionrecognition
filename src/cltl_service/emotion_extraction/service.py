@@ -6,6 +6,7 @@ from cltl.combot.infra.config import ConfigurationManager
 from cltl.combot.infra.event import Event, EventBus
 from cltl.combot.infra.resource import ResourceManager
 from cltl.combot.infra.topic_worker import TopicWorker
+from emissor.representation.scenario import class_source
 
 from cltl.emotion_extraction.api import EmotionExtractor
 from cltl_service.emotion_extraction.schema import EmotionRecognitionEvent
@@ -17,13 +18,13 @@ class EmotionExtractionService:
     @classmethod
     def from_config(cls, extractor: EmotionExtractor, event_bus: EventBus, resource_manager: ResourceManager,
                     config_manager: ConfigurationManager):
-        config = config_manager.get_config("cltl.text_emotion_extraction")
+        config = config_manager.get_config("cltl.emotion_recognition.events")
 
-        return cls(config.get("topic_input"), config.get("topic_output"), config.get("topic_scenario"),
+        return cls(config.get("topic_input"), config.get("topic_output"),
                    config.get("topic_intention"), config.get("intentions", multi=True),
                    extractor, event_bus, resource_manager)
 
-    def __init__(self, input_topic: str, output_topic: str, scenario_topic: str,
+    def __init__(self, input_topic: str, output_topic: str,
                  intention_topic: str, intentions: List[str], extractor: EmotionExtractor,
                  event_bus: EventBus, resource_manager: ResourceManager):
         self._extractor = extractor
@@ -33,11 +34,9 @@ class EmotionExtractionService:
 
         self._input_topic = input_topic
         self._output_topic = output_topic
-        self._scenario_topic = scenario_topic
 
         self._intention_topic = intention_topic if intention_topic else None
         self._intentions = set(intentions) if intentions else {}
-        self._active_intentions = {}
 
         self._topic_worker = None
 
@@ -48,10 +47,9 @@ class EmotionExtractionService:
         return None
 
     def start(self, timeout=30):
-        self._topic_worker = TopicWorker([self._input_topic, self._scenario_topic, self._intention_topic],
-                                         self._event_bus, provides=[self._output_topic],
+        self._topic_worker = TopicWorker([self._input_topic], self._event_bus, provides=[self._output_topic],
+                                         intentions=self._intentions, intention_topic=self._intention_topic,
                                          resource_manager=self._resource_manager, processor=self._process,
-                                         buffer_size=64,
                                          name=self.__class__.__name__)
         self._topic_worker.start().wait()
 
@@ -64,18 +62,9 @@ class EmotionExtractionService:
         self._topic_worker = None
 
     def _process(self, event: Event[TextSignalEvent]):
-        if event.metadata.topic == self._intention_topic:
-            self._active_intentions = set(event.payload.intentions)
-            logger.info("Set active intentions to %s", self._active_intentions)
-            return
-
-        if self._intentions and not (self._active_intentions & self._intentions):
-            logger.debug("Skipped event outside intention %s, active: %s (%s)",
-                         self._intentions, self._active_intentions, event)
-            return
-
         utterance= event.payload.signal.text
         emotions = self._extractor.extract_text_emotions(utterance)
+        source = class_source(self._extractor)
+        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotions, source)
 
-        emotion_event = EmotionRecognitionEvent.create_text_mentions(event.payload.signal, emotions)
         self._event_bus.publish(self._output_topic, Event.for_payload(emotion_event))

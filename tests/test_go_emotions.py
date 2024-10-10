@@ -4,7 +4,7 @@ from cltl.emotion_extraction.emotion_mappings import EmotionType
 from cltl.emotion_extraction.utterance_go_emotion_extractor import GoEmotionDetector
 
 
-class TestEmotions(unittest.TestCase):
+class TestGoEmotions(unittest.TestCase):
     def setUp(self) -> None:
         self._emotion_extractor = GoEmotionDetector()
 
