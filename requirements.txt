@@ -3,3 +3,5 @@
 # Tests
 Pillow
 parameterized
+emissor
+cltl.combot
