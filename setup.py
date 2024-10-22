@@ -41,7 +41,7 @@ setup(
             "torchvision",
             "opencv-python"
         ],
-        "service_text": [
+        "service": [
             "emissor",
             "flask",
             "cltl.combot",
