@@ -6,7 +6,8 @@ import pathlib
 import os
 
 def main(emissor: str):
-    annotator = EmotionAnnotator()
+    model_path = "/Users/piek/Desktop/d-Leolani/leolani-models/bert-base-go-emotion"
+    annotator = EmotionAnnotator(model=model_path)
     scenario_folder = emissor
     scenario_storage = ScenarioStorage(scenario_folder)
     scenarios = list(scenario_storage.list_scenarios())

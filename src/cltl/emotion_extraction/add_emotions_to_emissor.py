@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 
 class EmotionAnnotator (SignalProcessor):
 
-    def __init__(self):
+    def __init__(self, model: str):
         """ an evaluator that will use reference metrics to approximate the quality of a conversation, across turns.
         params
         returns: None
         """
-        self._classifier = GoEmotionDetector()
+        self._classifier = GoEmotionDetector(model=model)
         self._max_text_length=514
 
 
@@ -35,7 +35,9 @@ class EmotionAnnotator (SignalProcessor):
 
 
 if __name__ == "__main__":
-    annotator = EmotionAnnotator()
+
+    model_path = "/Users/piek/Desktop/d-Leolani/leolani-models/bert-base-go-emotion"
+    annotator = EmotionAnnotator(model=model_path)
     scenario_folder = "/Users/piek/Desktop/d-Leolani/tutorials/test10/leolani-text-to-ekg/app/py-app/storage/emissor"
 
     scenario_storage = ScenarioStorage(scenario_folder)
