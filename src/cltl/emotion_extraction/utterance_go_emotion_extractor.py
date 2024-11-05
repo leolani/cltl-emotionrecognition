@@ -69,7 +69,8 @@ class GoEmotionDetector(EmotionExtractor):
 
 if __name__ == "__main__":
     utterance = "I love cats."
-    analyzer = GoEmotionDetector()
+    model_path = "/Users/piek/Desktop/d-Leolani/leolani-models/bert-base-go-emotion"
+    analyzer = GoEmotionDetector(model=model_path)
     emotions = analyzer.extract_text_emotions(utterance)
     emotion_json ={}
     for emotion in emotions:
