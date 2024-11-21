@@ -56,14 +56,14 @@ class GoEmotionDetector(EmotionExtractor):
                 if result['score'] > 0 and result['score'] / results[0]['score'] > _THRESHOLD]
 
     def _log_results(self, emotions, response, start):
-        logger.info("got %s from server in %s sec", response, time.time() - start)
-        logger.info("All Go emotion detected: %s", [emotion.value for emotion in emotions
+        logger.debug("got %s from server in %s sec", response, time.time() - start)
+        logger.debug("All Go emotion detected: %s", [emotion.value for emotion in emotions
                                                     if emotion.type == EmotionType.GO])
-        logger.info("Highest scoring Go emotion: %s", next(emotion.value for emotion in emotions
+        logger.debug("Highest scoring Go emotion: %s", next(emotion.value for emotion in emotions
                                                            if emotion.type == EmotionType.GO))
-        logger.info("Highest scoring Ekman emotion: %s", next(emotion.value for emotion in emotions
+        logger.debug("Highest scoring Ekman emotion: %s", next(emotion.value for emotion in emotions
                                                               if emotion.type == EmotionType.EKMAN))
-        logger.info("Highest scoring Sentiment: %s", next(emotion.value for emotion in emotions
+        logger.debug("Highest scoring Sentiment: %s", next(emotion.value for emotion in emotions
                                                           if emotion.type == EmotionType.SENTIMENT))
 
 
