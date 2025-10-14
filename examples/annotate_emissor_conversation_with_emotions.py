@@ -5,11 +5,28 @@ from cltl.emotion_extraction.add_emotions_to_emissor import EmotionAnnotator
 import pathlib
 import os
 
-def main(emissor: str):
-    model_path = "/Users/piek/Desktop/d-Leolani/leolani-models/bert-base-go-emotion"
+
+def remove_annotations(self, signal, annotation_source: [str]):
+        keep_mentions = []
+        for mention in signal.mentions:
+            clear = False
+            for annotation in mention.annotations:
+                if annotation.source and annotation.source in annotation_source:
+                    clear = True
+                    break
+            if not clear:
+                keep_mentions.append(mention)
+        signal.mentions = keep_mentions
+
+def main(emissor: str, scenario: str, model_path: str, model_name: str):
     annotator = EmotionAnnotator(model=model_path)
-    scenario_folder = emissor
-    scenario_storage = ScenarioStorage(scenario_folder)
+    scenario_storage = ScenarioStorage(emissor)
+    scenarios = []
+    if scenario:
+        scenarios = [scenario]
+    else:
+        scenarios = list(scenario_storage.list_scenarios())
+    print("Processing scenarios: ", scenarios)
     scenarios = list(scenario_storage.list_scenarios())
     print("Processing scenarios: ", scenarios)
     for scenario in scenarios:
@@ -17,9 +34,23 @@ def main(emissor: str):
         scenario_ctrl = scenario_storage.load_scenario(scenario)
         signals = scenario_ctrl.get_signals(Modality.TEXT)
         for signal in signals:
+            annotator.remove_annotations(signal,[model_name])
             annotator.process_signal(scenario=scenario_ctrl, signal=signal)
         #### Save the modified scenario to emissor
         scenario_storage.save_scenario(scenario_ctrl)
+
+
+def remove_annotations(self, signal, annotation_source: [str]):
+        keep_mentions = []
+        for mention in signal.mentions:
+            clear = False
+            for annotation in mention.annotations:
+                if annotation.source and annotation.source in annotation_source:
+                    clear = True
+                    break
+            if not clear:
+                keep_mentions.append(mention)
+        signal.mentions = keep_mentions
 
 ### How to run: python3 examples/annotato_emissor_conversation_with_emotions.py --emissor "../data/emissor"
 
@@ -33,4 +64,7 @@ if __name__ == '__main__':
     if not os.path.exists(args.emissor):
         raise ValueError("The folder %s does not exists. The --emissor argument should point to a folder that contains the scenarios to annotate", args.emissor)
 
-    main(args.emissor.strip())
+    main(emissor=args.emissor,
+         scenario=args.scenario,
+         model_path=args.model_path,
+         model_name = args.model_name)
