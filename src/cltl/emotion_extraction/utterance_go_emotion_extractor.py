@@ -20,7 +20,7 @@ _THRESHOLD = 0.5
 
 
 class GoEmotionDetector(EmotionExtractor):
-    def __init__(self, model: str = _MODEL_NAME):
+    def __init__(self, model: str):
         self.emotion_pipeline = pipeline('sentiment-analysis',  model=model, return_all_scores=True)
 
     def extract_audio_emotions(self, audio_signal: Any) -> List[Emotion]:

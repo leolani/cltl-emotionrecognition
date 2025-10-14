@@ -18,7 +18,7 @@ def remove_annotations(self, signal, annotation_source: [str]):
                 keep_mentions.append(mention)
         signal.mentions = keep_mentions
 
-def main(emissor: str, scenario: str, model_path: str, model_name: str):
+def main(emissor: str, scenario: str, model_path: str, model_name: "GO"):
     annotator = EmotionAnnotator(model=model_path)
     scenario_storage = ScenarioStorage(emissor)
     scenarios = []
@@ -52,13 +52,17 @@ def remove_annotations(self, signal, annotation_source: [str]):
                 keep_mentions.append(mention)
         signal.mentions = keep_mentions
 
-### How to run: python3 examples/annotato_emissor_conversation_with_emotions.py --emissor "../data/emissor"
+### How to run: python3 examples/annotate_emissor_conversation_with_emotions.py --emissor "../data/emissor" --model_path "./resources/bert-base-go-emotion"
 
 if __name__ == '__main__':
     default = "../data/emissor"
-
+    model="./resources/bert-base-go-emotion"
     parser = argparse.ArgumentParser(description='Annotate emissor with emotions')
     parser.add_argument('--emissor', type=str, required=True, help="Path to the folder with emissor scenarios", default=default)
+    parser.add_argument('--scenario', type=str, required=False, help="Identifier of the scenario. If left out all subfolders will be considered as scenarios to process", default='')
+    parser.add_argument('--model_path', type=str, required=True, help="Path to the GO Emotions BERT model", default=model)
+    parser.add_argument('--model_name', type=str, required=False, help="Name of the model to label the provenance of the annotation in emissor", default='GO')
+
     args, _ = parser.parse_known_args()
     folder = os.path.exists(args.emissor)
     if not os.path.exists(args.emissor):
