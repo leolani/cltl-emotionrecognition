@@ -18,8 +18,11 @@ def remove_annotations(self, signal, annotation_source: [str]):
                 keep_mentions.append(mention)
         signal.mentions = keep_mentions
 
-def main(emissor: str, scenario: str, model_path: str, model_name: "GO"):
-    annotator = EmotionAnnotator(model=model_path)
+def main(emissor: str, scenario: str, model_path: str, model_name= "GO"):
+    annotator = EmotionAnnotator(model=model_path, model_name=model_name)
+    annotator.remove_annotations = remove_annotations.__get__(
+        annotator, EmotionAnnotator
+    )
     scenario_storage = ScenarioStorage(emissor)
     scenarios = []
     if scenario:
@@ -38,19 +41,6 @@ def main(emissor: str, scenario: str, model_path: str, model_name: "GO"):
             annotator.process_signal(scenario=scenario_ctrl, signal=signal)
         #### Save the modified scenario to emissor
         scenario_storage.save_scenario(scenario_ctrl)
-
-
-def remove_annotations(self, signal, annotation_source: [str]):
-        keep_mentions = []
-        for mention in signal.mentions:
-            clear = False
-            for annotation in mention.annotations:
-                if annotation.source and annotation.source in annotation_source:
-                    clear = True
-                    break
-            if not clear:
-                keep_mentions.append(mention)
-        signal.mentions = keep_mentions
 
 ### How to run: python3 examples/annotate_emissor_conversation_with_emotions.py --emissor "../data/emissor" --model_path "./resources/bert-base-go-emotion"
 
