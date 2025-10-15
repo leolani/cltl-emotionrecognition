@@ -21,7 +21,7 @@ _THRESHOLD = 0.5
 
 class GoEmotionDetector(EmotionExtractor):
     def __init__(self, model: str):
-        self.emotion_pipeline = pipeline('sentiment-analysis',  model=model, return_all_scores=True)
+        self.emotion_pipeline = pipeline('sentiment-analysis',  model=model, top_k=None)
 
     def extract_audio_emotions(self, audio_signal: Any) -> List[Emotion]:
         raise NotImplementedError()

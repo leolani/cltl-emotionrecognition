@@ -6,7 +6,7 @@ import pathlib
 import os
 
 
-def remove_annotations(self, signal, annotation_source: [str]):
+def remove_annotations(signal, annotation_source: [str]):
         keep_mentions = []
         for mention in signal.mentions:
             clear = False
@@ -20,9 +20,6 @@ def remove_annotations(self, signal, annotation_source: [str]):
 
 def main(emissor: str, scenario: str, model_path: str, model_name= "GO"):
     annotator = EmotionAnnotator(model=model_path, model_name=model_name)
-    annotator.remove_annotations = remove_annotations.__get__(
-        annotator, EmotionAnnotator
-    )
     scenario_storage = ScenarioStorage(emissor)
     scenarios = []
     if scenario:
@@ -37,7 +34,7 @@ def main(emissor: str, scenario: str, model_path: str, model_name= "GO"):
         scenario_ctrl = scenario_storage.load_scenario(scenario)
         signals = scenario_ctrl.get_signals(Modality.TEXT)
         for signal in signals:
-            annotator.remove_annotations(signal,[model_name])
+           # annotator.remove_annotations(signal,[model_name])
             annotator.process_signal(scenario=scenario_ctrl, signal=signal)
         #### Save the modified scenario to emissor
         scenario_storage.save_scenario(scenario_ctrl)
