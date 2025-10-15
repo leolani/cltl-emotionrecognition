@@ -45,6 +45,7 @@ if __name__ == '__main__':
     default = "../data/emissor"
     model="./resources/bert-base-go-emotion"
     model = "AnasAlokla/multilingual_go_emotions"
+#    Languages: Arabic, English, French, Spanish, Dutch, Turkish
     parser = argparse.ArgumentParser(description='Annotate emissor with emotions')
     parser.add_argument('--emissor', type=str, required=True, help="Path to the folder with emissor scenarios", default=default)
     parser.add_argument('--scenario', type=str, required=False, help="Identifier of the scenario. If left out all subfolders will be considered as scenarios to process", default='')
